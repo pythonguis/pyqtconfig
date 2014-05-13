@@ -23,6 +23,11 @@ RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
 
+def types_MethodType(fn, handler):
+    try:
+        return types.MethodType(fn, handler, type(handler))
+    except TypeError:
+        return types.MethodType(fn, handler)
 
 def _convert_list_type_from_XML(vs):
     '''
@@ -153,7 +158,7 @@ def build_tuple_mapper(mlist):
 # CUSTOM HANDLERS
     
 # QComboBox
-def _get_QComboBox(self):
+def _get_QComboBox():
     """
         Get value QCombobox via re-mapping filter
     """
@@ -696,8 +701,12 @@ class ConfigManagerBase(QObject):
         if type(handler).__name__  not in self.hooks:
             raise
            
-            
-        handler.setter, handler.getter, handler.updater =  self.hooks[ type(handler).__name__ ]
+           
+        hookg, hooks, hooku =  self.hooks[ type(handler).__name__ ]
+
+        handler.getter = types_MethodType(hookg, handler)
+        handler.setter = types_MethodType(hooks, handler)
+        handler.updater = types_MethodType(hooku, handler)
 
         print("Add handler %s for %s" % (type(handler).__name__, key))
         handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
