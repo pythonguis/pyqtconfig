@@ -658,7 +658,6 @@ class ConfigManagerBase(QObject):
         has_updated = False
         for k, v in list(keyvalues.items()):
             u = self.set(k, v, trigger_update=False)
-            logging.debug('Workflow config; setting %s to %s' % (k, v))
             has_updated = has_updated or u
 
         if has_updated and trigger_update:

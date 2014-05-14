@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 setup(
 
     name='pyqtconfig',
-    version="0.4.3",
+    version="0.4.5",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/pyqtconfig',
