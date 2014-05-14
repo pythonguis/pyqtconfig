@@ -21,7 +21,7 @@ default_build_options=dict(
 setup(
 
     name='pyqtconfig',
-    version="0.4",
+    version="0.4.0",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/pyqtconfig',
