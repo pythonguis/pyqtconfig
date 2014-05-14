@@ -343,14 +343,14 @@ def _get_QLineEdit(self):
     """
         Get current text for QLineEdit
     """
-    return self.text()
+    return self._get_map(self.text())
 
 
 def _set_QLineEdit(self, v):
     """
         Set current text for QLineEdit
     """
-    self.setText(v)
+    self.setText(self._set_map(v))
 
 
 def _event_QLineEdit(self):
