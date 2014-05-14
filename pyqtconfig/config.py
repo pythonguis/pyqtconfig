@@ -176,7 +176,7 @@ def _event_QComboBox(self):
     """
         Return QCombobox change event signal
     """
-    return self.currentTextChanged
+    return self.currentIndexChanged
 
 
 # QCheckBox
