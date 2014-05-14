@@ -169,7 +169,7 @@ def _set_QComboBox(self, v):
     """
         Set value QCombobox via re-mapping filter
     """
-    self.setCurrentText(self._set_map(v))
+    self.setCurrentIndex( self.findText( self._set_map(v) ) )
 
 
 def _event_QComboBox(self):
