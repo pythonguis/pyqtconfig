@@ -158,7 +158,7 @@ def build_tuple_mapper(mlist):
 # CUSTOM HANDLERS
     
 # QComboBox
-def _get_QComboBox():
+def _get_QComboBox(self):
     """
         Get value QCombobox via re-mapping filter
     """
