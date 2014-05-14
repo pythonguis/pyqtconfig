@@ -6,22 +6,10 @@ from copy import copy
 from setuptools import setup, find_packages
 
 
-# Defaults for py2app / cx_Freeze
-default_build_options=dict(
-    packages=[
-        ],
-    includes=[
-        ],
-    excludes=[
-        ],
-    )
-
-
-
 setup(
 
     name='pyqtconfig',
-    version="0.4.1",
+    version="0.4.2",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/pyqtconfig',
