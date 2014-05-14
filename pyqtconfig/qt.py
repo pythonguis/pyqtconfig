@@ -45,9 +45,9 @@ if USE_QT_PY == PYSIDE:
     pyqtSignal = Signal
 
 elif USE_QT_PY == PYQT4:
-    from PySide.QtGui import *
-    from PySide.QtCore import *
-    from PySide.QtNetwork import *
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+    from PyQt4.QtNetwork import *
 
 elif USE_QT_PY == PYQT5:
     
