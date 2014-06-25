@@ -1,8 +1,7 @@
-"""
-This module exists to smooth out some of the differences between PySide, PyQt4 and PyQt5
-"""
-
+from __future__ import unicode_literals
 import sys
+import os
+import logging
 
 PYSIDE = 0
 PYQT4 = 1
@@ -10,48 +9,54 @@ PYQT5 = 2
 
 USE_QT_PY = None
 
-## Automatically determine whether to use PyQt or PySide. 
-## This is done by first checking to see whether one of the libraries
-## is already imported. If not, then attempt to import PyQt4, then PySide.
-if 'PyQt4' in sys.modules:
+QT_API_ENV = os.environ.get('QT_API')
+ETS = dict(pyqt=PYQT4, pyqt5=PYQT5, pyside=PYSIDE)
+
+# Check environment variable
+if QT_API_ENV and QT_API_ENV in ETS:
+        USE_QT_PY = ETS[QT_API_ENV]
+
+# Check if one already importer        
+elif 'PyQt4' in sys.modules:
     USE_QT_PY = PYQT4
-if 'PyQt5' in sys.modules:
+elif 'PyQt5' in sys.modules:
     USE_QT_PY = PYQT5
-elif 'PySide' in sys.modules:
-    USE_QT_PY = PYSIDE
 else:
+    # Try importing in turn
     try:
-        import PyQt4
-        USE_QT_PY = PYQT4
-    except ImportError:
+        import PyQt5
+        USE_QT_PY = PYQT5
+    except:
         try:
-            import PyQt5
-            USE_QT_PY = PYQT5
+            import PyQt4
+            USE_QT_PY = PYQT4
         except ImportError:
             try:
                 import PySide
                 USE_QT_PY = PYSIDE
             except:
                 pass
+                
+# Import PyQt classes accessible in elsewhere through from qt import *
+if USE_QT_PY == PYQT5:                
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtWebKit import *
+    from PyQt5.QtNetwork import *
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtWebKitWidgets import *
 
-if USE_QT_PY == None:
-    raise Exception("Requires one of PyQt4, PyQt5 or PySide; none of these packages could be imported.")
-
-if USE_QT_PY == PYSIDE:
+elif USE_QT_PY == PYSIDE:
     from PySide.QtGui import *
     from PySide.QtCore import *
     from PySide.QtNetwork import *
     
     pyqtSignal = Signal
 
-elif USE_QT_PY == PYQT4:
+
+elif USE_QT_PY == PYQT4:  
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
+    from PyQt4.QtWebKit import *
     from PyQt4.QtNetwork import *
-
-elif USE_QT_PY == PYQT5:
     
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtNetwork import *
-    from PyQt5.QtWidgets import *

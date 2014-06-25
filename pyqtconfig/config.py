@@ -169,7 +169,7 @@ def _set_QComboBox(self, v):
     """
         Set value QCombobox via re-mapping filter
     """
-    self.setCurrentIndex( self.findText( self._set_map(v) ) )
+    self.setCurrentIndex( self.findText( str( self._set_map(v) ) ) )
 
 
 def _event_QComboBox(self):
@@ -426,9 +426,11 @@ def _set_QListWidgetAddRemove(self, v):
         
         Supply values to be selected as a list.
     """
+    block = self.blockSignals(True)
     self.clear()
     self.addItems([self._set_map(s) for s in v])
-
+    self.blockSignals(block)
+    self.itemAddedOrRemoved.emit()
 
 def _event_QListWidgetAddRemove(self):
     """
@@ -492,7 +494,7 @@ HOOKS = {
     'QLineEdit':    (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
     'CodeEditor':    (_get_CodeEditor, _set_CodeEditor, _event_CodeEditor),
     'QListWidget':    (_get_QListWidget, _set_QListWidget, _event_QListWidget),
-    'QListWidgetWithAddRemoveEvent':    (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
+    'QListWidgetAddRemove':    (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
     'QColorButton':    (_get_QColorButton, _set_QColorButton, _event_QColorButton),
     'QNoneDoubleSpinBox':    (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
 }
@@ -698,7 +700,7 @@ class ConfigManagerBase(QObject):
         self.handlers[key] = handler
 
         if type(handler).__name__  not in self.hooks:
-            raise
+            assert False, "No handler-functions available for this widget type (%s)" % type(handler).__name__
            
            
         hookg, hooks, hooku =  self.hooks[ type(handler).__name__ ]
@@ -760,6 +762,18 @@ class ConfigManagerBase(QObject):
             config[xconfig.get('id')] = v
 
         self.set_many(config, trigger_update=False)
+        
+    def as_dict(self):
+        '''
+        Return the combination of defaults and config as a flat dict (so it can be pickled)
+        '''
+        result_dict = {}
+        for k,v in self.defaults.items():
+            result_dict[k] = self.get(k)
+            
+        return result_dict
+            
+    
 
 class ConfigManager(ConfigManagerBase):
 
@@ -807,23 +821,34 @@ class QSettingsManager(ConfigManagerBase):
 
     def _get(self, key):
         with QMutexLocker(self.mutex):
-            if self.settings.value(key, None) is not None:
+
+            v = self.settings.value(key, None)
+            if v is not None:
+                if type(v) == QVariant and v.type() == QVariant.Invalid: # Invalid check for Qt4
+                    return None
+                    
                 # Map type to that in defaults: required in case QVariant is a string
                 # representation of the actual value (e.g. on Windows Reg)
-                v = self.settings.value(key)
-                if key in self.defaults and type(v) != type(self.defaults[key]):
-                    t = type(self.defaults[key])
-                    type_munge = {
-                        int: QMetaType.Int,
-                        float: QMetaType.Float,
-                        str: QMetaType.QString,
-                        unicode: QMetaType.QString,
-                        bool: QMetaType.Bool,
-                        list: QMetaType.QStringList,
-                    }
-                    qv = QVariant(v)
-                    qv.convert(type_munge[t])
-                    v = qv.value()
+                vt =  type(v) 
+                if key in self.defaults:
+                    dt = type(self.defaults[key])
+                    print "IN:%s" % v, key, dt, vt
+                    if vt == QVariant:
+                        # The target type is a QVariant so munge it
+                        # If QVariant (Qt4):
+                        type_munge = {
+                            int: v.toInt,
+                            float: v.toFloat,
+                            str: v.toString,
+                            unicode: v.toString,
+                            bool: v.toBool,
+                            list: v.toStringList,
+                        }
+                        v = type_munge[ dt ]()
+                    
+                    v = dt( v )
+                    print "OUT:%s" % v, key, dt, dt(v)
+
                 return v
 
             else:
