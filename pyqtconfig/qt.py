@@ -62,4 +62,3 @@ elif USE_QT_PY == PYQT4:
     from PyQt4.QtCore import *
     from PyQt4.QtWebKit import *
     from PyQt4.QtNetwork import *
-    

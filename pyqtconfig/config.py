@@ -832,7 +832,6 @@ class QSettingsManager(ConfigManagerBase):
                 vt =  type(v) 
                 if key in self.defaults:
                     dt = type(self.defaults[key])
-                    print "IN:%s" % v, key, dt, vt
                     if vt == QVariant:
                         # The target type is a QVariant so munge it
                         # If QVariant (Qt4):
@@ -847,7 +846,6 @@ class QSettingsManager(ConfigManagerBase):
                         v = type_munge[ dt ]()
                     
                     v = dt( v )
-                    print "OUT:%s" % v, key, dt, dt(v)
 
                 return v
 
