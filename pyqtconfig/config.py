@@ -138,7 +138,11 @@ try:
     unicode
 except:
     # Python3 recoding
-    unicode = lambda x: x.decode('utf-8')
+    def unicode(s):
+        if isinstance(s, bytes):
+            return x.decode('utf-8')
+        else:
+            return s
 
 
 def build_tuple_mapper(mlist):
