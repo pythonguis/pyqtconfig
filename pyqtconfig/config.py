@@ -140,7 +140,7 @@ except:
     # Python3 recoding
     def unicode(s):
         if isinstance(s, bytes):
-            return x.decode('utf-8')
+            return s.decode('utf-8')
         else:
             return s
 
