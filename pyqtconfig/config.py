@@ -134,9 +134,11 @@ def build_dict_mapper(mdict):
         )
 
 try:
+    # Python2.7
     unicode
 except:
-    unicode = str
+    # Python3 recoding
+    unicode = lambda x: x.decode('utf-8')
 
 
 def build_tuple_mapper(mlist):
