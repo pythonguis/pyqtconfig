@@ -169,7 +169,7 @@ def _set_QComboBox(self, v):
     """
         Set value QCombobox via re-mapping filter
     """
-    self.setCurrentIndex( self.findText( str( self._set_map(v) ) ) )
+    self.setCurrentIndex( self.findText( unicode( self._set_map(v) ) ) )
 
 
 def _event_QComboBox(self):
@@ -324,7 +324,7 @@ def _set_QPlainTextEdit(self, v):
     """
         Set current document text for QPlainTextEdit
     """
-    self.setPlainText(v)
+    self.setPlainText(unicode(v))
 
 
 def _event_QPlainTextEdit(self):
@@ -350,7 +350,7 @@ def _set_QLineEdit(self, v):
     """
         Set current text for QLineEdit
     """
-    self.setText(self._set_map(v))
+    self.setText( unicode(self._set_map(v)) )
 
 
 def _event_QLineEdit(self):
@@ -372,7 +372,7 @@ def _set_CodeEditor(self, v):
     """
         Set current document text for CodeEditor. Wraps _set_QPlainTextEdit.
     """
-    _set_QPlainTextEdit(self, v)
+    _set_QPlainTextEdit(self, unicode(v) )
 
 
 def _event_CodeEditor(self):
@@ -400,7 +400,7 @@ def _set_QListWidget(self, v):
     """
     if v:
         for s in v:
-            self.findItems(self._set_map(s), Qt.MatchExactly)[0].setSelected(True)
+            self.findItems( unicode(self._set_map(s)), Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
@@ -428,7 +428,7 @@ def _set_QListWidgetAddRemove(self, v):
     """
     block = self.blockSignals(True)
     self.clear()
-    self.addItems([self._set_map(s) for s in v])
+    self.addItems([unicode(self._set_map(s)) for s in v])
     self.blockSignals(block)
     self.itemAddedOrRemoved.emit()
 
@@ -481,6 +481,34 @@ def _event_QNoneDoubleSpinBox(self):
     """
     return self.valueChanged
 
+#QCheckTreeWidget
+def _get_QCheckTreeWidget(self):
+    """
+        Get currently checked values in QCheckTreeWidget via re-mapping filter.
+        
+        Selected values are returned as a list.
+    """
+    return [self._get_map(s) for s in self._checked_item_cache]
+
+
+def _set_QCheckTreeWidget(self, v):
+    """
+        Set currently checked values in QCheckTreeWidget via re-mapping filter.
+        
+        Supply values to be selected as a list.
+    """
+    if v:
+        for s in v:
+            f = self.findItems(unicode(self._set_map(s)), Qt.MatchExactly | Qt.MatchRecursive)
+            if f:
+                f[0].setCheckState(0, Qt.Checked)
+
+
+def _event_QCheckTreeWidget(self):
+    """
+        Return current checked changed signal for QCheckTreeWidget.
+    """
+    return self.itemCheckedChanged
 
 HOOKS = {
     'QComboBox':    (_get_QComboBox, _set_QComboBox, _event_QComboBox),
@@ -497,6 +525,7 @@ HOOKS = {
     'QListWidgetAddRemove':    (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
     'QColorButton':    (_get_QColorButton, _set_QColorButton, _event_QColorButton),
     'QNoneDoubleSpinBox':    (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
+    'QCheckTreeWidget': (_get_QCheckTreeWidget, _set_QCheckTreeWidget, _event_QCheckTreeWidget),
 }
 
 
@@ -560,7 +589,7 @@ class ConfigManagerBase(QObject):
             :type key: str
             :param value: The value to set the configuration key to
             :type value: Any supported (str, int, bool, list-of-supported-types)
-            :rtype: bool (success)              
+            :rtype: bool (success)   
         """
         if self._get(key) == value:
             return False  # Not updating
@@ -709,7 +738,7 @@ class ConfigManagerBase(QObject):
         handler.setter = types_MethodType(hooks, handler)
         handler.updater = types_MethodType(hooku, handler)
 
-        print("Add handler %s for %s" % (type(handler).__name__, key))
+        logging.debug("Add handler %s for %s" % (type(handler).__name__, key))
         handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
         handler.updater().connect(handler_callback)
 
