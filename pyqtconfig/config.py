@@ -101,6 +101,7 @@ CONVERT_TYPE_TO_XML = {
     'list': _convert_list_type_to_XML,
     'tuple': _convert_list_type_to_XML,
     'dict': _convert_dict_type_to_XML,
+    'NoneType': _apply_text_str,
 }
 
 CONVERT_TYPE_FROM_XML = {
@@ -112,6 +113,7 @@ CONVERT_TYPE_FROM_XML = {
     'list': _convert_list_type_from_XML,
     'tuple': _convert_list_type_from_XML,
     'dict': _convert_dict_type_from_XML,
+    'NoneType': lambda x: None,
 }
 
 
