@@ -199,7 +199,7 @@ def _set_QCheckBox(self, v):
     """
         Set state of QCheckbox
     """
-    self.setChecked(v)
+    self.setChecked(unicode(v).lower() == u'true')
 
 
 def _event_QCheckBox(self):
@@ -267,7 +267,7 @@ def _set_QPushButton(self, v):
     """
         Set checked state of QPushButton
     """
-    self.setChecked(v)
+    self.setChecked(unicode(v).lower() == u'true')
 
 
 def _event_QPushButton(self):
@@ -288,14 +288,14 @@ def _set_QSpinBox(self, v):
     """
         Set current value for QSpinBox
     """
-    self.setValue(v)
+    self.setValue(int(v))
 
 
 def _event_QSpinBox(self):
     """
         Return value change signal for QSpinBox
     """
-    return self.valueChanged
+    return self.valueChanged  # FIXME: not working (has [int] and [str] variant)
 
 
 # QDoubleSpinBox
