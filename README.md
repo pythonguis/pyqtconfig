@@ -4,6 +4,8 @@ PyQtConfig
 PyQtConfig is a simple API for handling, persisting and synchronising configuration 
 within PyQt applications.
 
+![Demo of config setting with widgets #1](demo-1.png)
+
 The core of the API is a `ConfigManager` instance that holds configuration settings (either
 as a Python dict, or a QSettings instance) and provides standard methods to `get` and `set`
 values. 
@@ -22,13 +24,13 @@ with widgets requires a running QApplication). Go to the pyqtconfig install fold
     python demo.py
 
 
-![Demo of config setting with widgets #1](demo-1.png)
-
 ![Demo of config setting with widgets #2](demo-2.png)
 
 ![Demo of config setting with widgets #3](demo-3.png)
 
 ![Demo of config setting with widgets #4](demo-4.png)
+
+![Demo of config setting with widgets #4](demo-5.png)
 
 
 Simple usage (dictionary)
