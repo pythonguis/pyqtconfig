@@ -92,6 +92,7 @@ settings = QSettingsManager()
 settings.set('number', 42)
 settings.set('text', "bla")
 settings.set('array', ["a", "b"])
+settings.set('active', True)
 
 settings.get('number')
 >> 42
@@ -128,6 +129,9 @@ checkbox = QtGui.QCheckBox('active')
 config.add_handler('active', checkbox)
 ```
 
+![Demo of config setting with widgets #2](demo-6.png)
+
+
 The values of the widgets are automatically set to the pre-set defaults. Note that if we
 hadn't pre-set a default value the *reverse* would happen, and the default would be set 
 to the value in the widget. This allows you to define the defaults in either way.
@@ -151,6 +155,9 @@ We can also update the widgets via the `ConfigManager` using `set`.
 config.set('text', 'new value')
 config.set('active', False)
 ```
+
+![Demo of config setting with widgets #2](demo-7.png)
+
     
 Mapping
 -------
@@ -186,6 +193,8 @@ comboBox = QtGui.QComboBox()
 comboBox.addItems( map_dict.keys() )
 config.add_handler('combo', comboBox, mapper=map_dict)
 ```
+
+![Demo of config setting with widgets #2](demo-8.png)
 
 Note how the config is set to `3` (the value of `CHOICE_C`) but displays "Choice C" as text.
 
