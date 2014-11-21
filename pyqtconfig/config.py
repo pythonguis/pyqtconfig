@@ -29,6 +29,7 @@ def types_MethodType(fn, handler):
     except TypeError:
         return types.MethodType(fn, handler)
 
+
 def _convert_list_type_from_XML(vs):
     '''
     Lists are a complex type with possibility for mixed sub-types. Therefore each
@@ -139,6 +140,8 @@ try:
     # Python2.7
     unicode
 except:
+
+
     # Python3 recoding
     def unicode(s):
         if isinstance(s, bytes):
@@ -164,7 +167,7 @@ def build_tuple_mapper(mlist):
 
 
 # CUSTOM HANDLERS
-    
+
 # QComboBox
 def _get_QComboBox(self):
     """
@@ -177,7 +180,7 @@ def _set_QComboBox(self, v):
     """
         Set value QCombobox via re-mapping filter
     """
-    self.setCurrentIndex( self.findText( unicode( self._set_map(v) ) ) )
+    self.setCurrentIndex(self.findText(unicode(self._set_map(v))))
 
 
 def _event_QComboBox(self):
@@ -207,6 +210,7 @@ def _event_QCheckBox(self):
         Return state change signal for QCheckbox
     """
     return self.stateChanged
+
 
 # QAction
 def _get_QAction(self):
@@ -275,6 +279,7 @@ def _event_QPushButton(self):
         Return state change signal for QPushButton
     """
     return self.toggled
+
 
 # QSpinBox
 def _get_QSpinBox(self):
@@ -358,7 +363,7 @@ def _set_QLineEdit(self, v):
     """
         Set current text for QLineEdit
     """
-    self.setText( unicode(self._set_map(v)) )
+    self.setText(unicode(self._set_map(v)))
 
 
 def _event_QLineEdit(self):
@@ -380,7 +385,7 @@ def _set_CodeEditor(self, v):
     """
         Set current document text for CodeEditor. Wraps _set_QPlainTextEdit.
     """
-    _set_QPlainTextEdit(self, unicode(v) )
+    _set_QPlainTextEdit(self, unicode(v))
 
 
 def _event_CodeEditor(self):
@@ -408,7 +413,7 @@ def _set_QListWidget(self, v):
     """
     if v:
         for s in v:
-            self.findItems( unicode(self._set_map(s)), Qt.MatchExactly)[0].setSelected(True)
+            self.findItems(unicode(self._set_map(s)), Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
@@ -440,11 +445,13 @@ def _set_QListWidgetAddRemove(self, v):
     self.blockSignals(block)
     self.itemAddedOrRemoved.emit()
 
+
 def _event_QListWidgetAddRemove(self):
     """
         Return current selection changed signal for QListWidget.
     """
     return self.itemAddedOrRemoved
+
 
 # QColorButton
 def _get_QColorButton(self):
@@ -489,6 +496,7 @@ def _event_QNoneDoubleSpinBox(self):
     """
     return self.valueChanged
 
+
 #QCheckTreeWidget
 def _get_QCheckTreeWidget(self):
     """
@@ -519,23 +527,22 @@ def _event_QCheckTreeWidget(self):
     return self.itemCheckedChanged
 
 HOOKS = {
-    'QComboBox':    (_get_QComboBox, _set_QComboBox, _event_QComboBox),
-    'QCheckBox':    (_get_QCheckBox, _set_QCheckBox, _event_QCheckBox),
-    'QAction':      (_get_QAction, _set_QAction, _event_QAction),
+    'QComboBox': (_get_QComboBox, _set_QComboBox, _event_QComboBox),
+    'QCheckBox': (_get_QCheckBox, _set_QCheckBox, _event_QCheckBox),
+    'QAction': (_get_QAction, _set_QAction, _event_QAction),
     'QActionGroup': (_get_QActionGroup, _set_QActionGroup, _event_QActionGroup),
-    'QPushButton':  (_get_QPushButton, _set_QPushButton, _event_QPushButton),
-    'QSpinBox':    (_get_QSpinBox, _set_QSpinBox, _event_QSpinBox),
-    'QDoubleSpinBox':    (_get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
-    'QPlainTextEdit':    (_get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
-    'QLineEdit':    (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
-    'CodeEditor':    (_get_CodeEditor, _set_CodeEditor, _event_CodeEditor),
-    'QListWidget':    (_get_QListWidget, _set_QListWidget, _event_QListWidget),
-    'QListWidgetAddRemove':    (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
-    'QColorButton':    (_get_QColorButton, _set_QColorButton, _event_QColorButton),
-    'QNoneDoubleSpinBox':    (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
+    'QPushButton': (_get_QPushButton, _set_QPushButton, _event_QPushButton),
+    'QSpinBox': (_get_QSpinBox, _set_QSpinBox, _event_QSpinBox),
+    'QDoubleSpinBox': (_get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
+    'QPlainTextEdit': (_get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
+    'QLineEdit': (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
+    'CodeEditor': (_get_CodeEditor, _set_CodeEditor, _event_CodeEditor),
+    'QListWidget': (_get_QListWidget, _set_QListWidget, _event_QListWidget),
+    'QListWidgetAddRemove': (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
+    'QColorButton': (_get_QColorButton, _set_QColorButton, _event_QColorButton),
+    'QNoneDoubleSpinBox': (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
     'QCheckTreeWidget': (_get_QCheckTreeWidget, _set_QCheckTreeWidget, _event_QCheckTreeWidget),
 }
-
 
 
 # ConfigManager handles configuration for a given appview
@@ -559,14 +566,14 @@ class ConfigManagerBase(QObject):
                 return self.config[key]
             except:
                 return None
-                
+
     def _get_default(self, key):
         with QMutexLocker(self.mutex):
             try:
                 return self.defaults[key]
             except:
                 return None
-    
+
     # Get config
     def get(self, key):
         """ 
@@ -739,8 +746,7 @@ class ConfigManagerBase(QObject):
         if type(handler).__name__  not in self.hooks:
             assert False, "No handler-functions available for this widget type (%s)" % type(handler).__name__
            
-           
-        hookg, hooks, hooku =  self.hooks[ type(handler).__name__ ]
+        hookg, hooks, hooku = self.hooks[type(handler).__name__]
 
         handler.getter = types_MethodType(hookg, handler)
         handler.setter = types_MethodType(hooks, handler)
@@ -760,7 +766,7 @@ class ConfigManagerBase(QObject):
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
-            
+
         # If the key is not in defaults, set the default to match the handler
         else:
             self.set_default(key, handler.getter())
@@ -799,19 +805,18 @@ class ConfigManagerBase(QObject):
             config[xconfig.get('id')] = v
 
         self.set_many(config, trigger_update=False)
-        
+
     def as_dict(self):
         '''
         Return the combination of defaults and config as a flat dict (so it can be pickled)
         '''
         result_dict = {}
-        for k,v in self.defaults.items():
+        for k, v in self.defaults.items():
             result_dict[k] = self.get(k)
-            
-        return result_dict
-            
-    
 
+        return result_dict
+
+    
 class ConfigManager(ConfigManagerBase):
 
     def reset(self):
@@ -827,18 +832,16 @@ class ConfigManager(ConfigManagerBase):
         self.maps = {}
         self.eventhooks = {}
         
-        
     def _get(self, key):
         with QMutexLocker(self.mutex):
             try:
                 return self.config[key]
             except:
                 return None
-                
+
     def _set(self, key, value):
         with QMutexLocker(self.mutex):
             self.config[key] = value
-
 
 
 class QSettingsManager(ConfigManagerBase):
@@ -861,12 +864,12 @@ class QSettingsManager(ConfigManagerBase):
 
             v = self.settings.value(key, None)
             if v is not None:
-                if type(v) == QVariant and v.type() == QVariant.Invalid: # Invalid check for Qt4
+                if type(v) == QVariant and v.type() == QVariant.Invalid:  # Invalid check for Qt4
                     return None
-                    
+
                 # Map type to that in defaults: required in case QVariant is a string
                 # representation of the actual value (e.g. on Windows Reg)
-                vt =  type(v) 
+                vt = type(v)
                 if key in self.defaults:
                     dt = type(self.defaults[key])
                     if vt == QVariant:
@@ -880,9 +883,9 @@ class QSettingsManager(ConfigManagerBase):
                             bool: v.toBool,
                             list: v.toStringList,
                         }
-                        v = type_munge[ dt ]()
-                    
-                    v = dt( v )
+                        v = type_munge[dt]()
+
+                    v = dt(v)
 
                 return v
 
