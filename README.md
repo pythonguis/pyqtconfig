@@ -22,7 +22,7 @@ A small application has been included in PyQtConfig to demonstrate these feature
 with widgets requires a running QApplication). Go to the pyqtconfig install folder and run it with:
 
 ```
-python demo.py
+python -m pyqtconfig.demo
 ```
 
 ![Demo of config setting with widgets #2](demo-2.png)
