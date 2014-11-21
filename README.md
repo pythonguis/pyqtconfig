@@ -202,7 +202,7 @@ you to use PyQtConfig to write config into an XML file without worrying about th
 Acknowledgements
 ----------------
 
-Thanks to @pka for starting this documentation that I had forgot about entirely.
+Thanks to [Pirmin Kalberer](https://github.com/pka) for starting this documentation that I had forgot about entirely.
 
 Bug reports and pull-requests are most welcome.
 
