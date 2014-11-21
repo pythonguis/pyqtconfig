@@ -6,6 +6,18 @@ within PyQt applications.
 
 ![Demo of config setting with widgets #1](demo-1.png)
 
+Features
+--------
+
+- consistent interface to read values from widgets, always `get` and `set`
+- seamlessly handle conversion of types from QSettings strings
+- integrated mapping handles conversions between display and internal settings, e.g. nice text in combo boxes to integer values
+- save and load configuration via `dict` (to JSON) or `XML`
+- BSD licensed
+
+Introduction
+------------
+
 The core of the API is a `ConfigManager` instance that holds configuration settings (either
 as a Python dict, or a QSettings instance) and provides standard methods to `get` and `set`
 values. 
