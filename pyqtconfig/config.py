@@ -709,7 +709,7 @@ class ConfigManagerBase(QObject):
     # and updated from the config manager. Allows instantaneous updating on config
     # changes and ensuring that elements remain in sync
 
-    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x)):
+    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x), auto_set_default=True):
         """
         Add a handler (UI element) for a given config key.
         
@@ -760,10 +760,10 @@ class ConfigManagerBase(QObject):
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
-
-        # If the key is not in defaults, set the config to match the handler
+            
+        # If the key is not in defaults, set the default to match the handler
         else:
-            self._set(key, handler.getter())
+            self.set_default(key, handler.getter())
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
