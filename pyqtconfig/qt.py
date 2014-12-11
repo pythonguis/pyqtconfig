@@ -14,9 +14,9 @@ ETS = dict(pyqt=PYQT4, pyqt5=PYQT5, pyside=PYSIDE)
 
 # Check environment variable
 if QT_API_ENV and QT_API_ENV in ETS:
-        USE_QT_PY = ETS[QT_API_ENV]
+    USE_QT_PY = ETS[QT_API_ENV]
 
-# Check if one already importer        
+# Check if one already importer
 elif 'PyQt4' in sys.modules:
     USE_QT_PY = PYQT4
 elif 'PyQt5' in sys.modules:
@@ -36,9 +36,9 @@ else:
                 USE_QT_PY = PYSIDE
             except:
                 pass
-                
+
 # Import PyQt classes accessible in elsewhere through from qt import *
-if USE_QT_PY == PYQT5:                
+if USE_QT_PY == PYQT5:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
     from PyQt5.QtWebKit import *
@@ -50,11 +50,11 @@ elif USE_QT_PY == PYSIDE:
     from PySide.QtGui import *
     from PySide.QtCore import *
     from PySide.QtNetwork import *
-    
+
     pyqtSignal = Signal
 
 
-elif USE_QT_PY == PYQT4:  
+elif USE_QT_PY == PYQT4:
     import sip
     sip.setapi('QString', 2)
     sip.setapi('QVariant', 2)

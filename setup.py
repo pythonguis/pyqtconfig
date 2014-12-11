@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 setup(
 
     name='pyqtconfig',
-    version="0.6.0",
+    version="0.7.0",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/mfitzp/pyqtconfig',
@@ -41,7 +41,7 @@ setup(
                'Natural Language :: English',
                'Operating System :: OS Independent',
                'Programming Language :: Python :: 2',
-               'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+               'License :: OSI Approved :: BSD License',
                'Topic :: Scientific/Engineering :: Bio-Informatics',
                'Topic :: Education',
                'Intended Audience :: Science/Research',
