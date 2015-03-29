@@ -525,6 +525,30 @@ def _event_QCheckTreeWidget(self):
         Return current checked changed signal for QCheckTreeWidget.
     """
     return self.itemCheckedChanged
+    
+    
+# QSlider
+def _get_QSlider(self):
+    """
+        Get current value for QSlider
+    """
+    return self.value()
+
+
+def _set_QSlider(self, v):
+    """
+        Set current value for QSlider
+    """
+    self.setValue(v)
+
+
+def _event_QSlider(self):
+    """
+        Return value change signal for QSlider
+    """
+    return self.valueChanged
+    
+    
 
 HOOKS = {
     'QComboBox': (_get_QComboBox, _set_QComboBox, _event_QComboBox),
@@ -542,6 +566,7 @@ HOOKS = {
     'QColorButton': (_get_QColorButton, _set_QColorButton, _event_QColorButton),
     'QNoneDoubleSpinBox': (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
     'QCheckTreeWidget': (_get_QCheckTreeWidget, _set_QCheckTreeWidget, _event_QCheckTreeWidget),
+    'QSlider': (_get_QSlider, _set_QSlider, _event_QSlider),    
 }
 
 
