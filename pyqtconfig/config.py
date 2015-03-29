@@ -759,17 +759,17 @@ class ConfigManagerBase(QObject):
         # Store this so we can issue a specific remove on deletes
         self.handler_callbacks[key] = handler_callback
 
+        # If the key is not in defaults, set the default to match the handler
+        if key not in self.defaults:
+            self.set_default(key, handler.getter())
+
         # Keep handler and data consistent
-        if self._get(key):
+        if self._get(key) is not None:
             handler.setter(self._get(key))
 
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
-
-        # If the key is not in defaults, set the default to match the handler
-        else:
-            self.set_default(key, handler.getter())
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
@@ -884,6 +884,16 @@ class QSettingsManager(ConfigManagerBase):
                             list: v.toStringList,
                         }
                         v = type_munge[dt]()
+                    elif vt != dt and vt == unicode:
+                        # Value is stored as unicode so munge it
+                        type_munge = {
+                            int: lambda x: int(x),
+                            float: lambda x: float(x),
+                            str: lambda x: str(x),
+                            bool: lambda x: x.lower() == u'true',
+                            # other types?
+                        }
+                        v = type_munge[dt](v)
 
                     v = dt(v)
 
