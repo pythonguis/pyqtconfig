@@ -577,12 +577,15 @@ class ConfigManagerBase(QObject):
     # Signals
     updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
 
-    def __init__(self, defaults={}, *args, **kwargs):
+    def __init__(self, defaults=None, *args, **kwargs):
         super(ConfigManagerBase, self).__init__(*args, **kwargs)
 
         self.mutex = QMutex()
         self.hooks = HOOKS
         self.reset()
+        if defaults is None:
+            defaults = {}
+        
         self.defaults = defaults  # Same mapping as above, used when config not set
 
     def _get(self, key):
