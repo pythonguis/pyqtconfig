@@ -547,6 +547,29 @@ def _event_QSlider(self):
         Return value change signal for QSlider
     """
     return self.valueChanged
+	
+
+#QButtonGroup
+def _get_QButtonGroup(self):
+    """
+        Get a list of (index, checked) tuples for the buttons in the group
+    """
+    return [(nr, btn.isChecked()) for nr, btn in enumerate(self.buttons())]
+
+
+def _set_QButtonGroup(self, v):
+    """
+        Set the states for all buttons in a group from a list of (index, checked) tuples
+    """
+    for idx, state in v:
+        self.buttons()[idx].setChecked(state)
+
+
+def _event_QButtonGroup(self):
+    """
+        Return button clicked signal for QButtonGroup
+    """
+    return self.buttonClicked
     
     
 
@@ -566,7 +589,8 @@ HOOKS = {
     'QColorButton': (_get_QColorButton, _set_QColorButton, _event_QColorButton),
     'QNoneDoubleSpinBox': (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
     'QCheckTreeWidget': (_get_QCheckTreeWidget, _set_QCheckTreeWidget, _event_QCheckTreeWidget),
-    'QSlider': (_get_QSlider, _set_QSlider, _event_QSlider),    
+    'QSlider': (_get_QSlider, _set_QSlider, _event_QSlider),
+    'QButtonGroup': (_get_QButtonGroup, _set_QButtonGroup, _event_QButtonGroup),
 }
 
 

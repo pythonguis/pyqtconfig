@@ -198,6 +198,46 @@ config.add_handler('combo', comboBox, mapper=map_dict)
 
 Note how the config is set to `3` (the value of `CHOICE_C`) but displays "Choice C" as text.
 
+Supported Widgets
+-----------------
+The following Qt-Widgets are supported:
+
+ - QComboBox
+ - QCheckBox
+ - QAction
+ - QActionGroup
+ - QPushButton
+ - QSpinBox
+ - QDoubleSpinBox
+ - QPlainTextEdit
+ - QLineEdit
+ - QListWidget
+ - QSlider
+ - QButtonGroup
+ 
+There are also some additional hooks defined for non standard widgets. With
+```python
+import pyqtconfig
+print(pyqtconfig.HOOKS.keys())
+```
+you can obtain a list of all registered Widgets. Adding support for your own widget is also straight forward:
+```python
+from pyqtconfig import ConfigManager
+
+def _get_MyWidget(self):
+    return self.myvalue
+   
+def _set_MyWidget(self, val):
+    self.myvalue = val
+	
+def _event_MyWidget(self):
+    return self.MyValueChanged
+
+config = ConfigManager()
+config.add_hooks('MyWidget', (_get_MyWidget, _set_MyWidget, _event_MyWidget))
+```
+
+
 Saving and loading data
 -----------------------
 
