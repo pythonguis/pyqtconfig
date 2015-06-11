@@ -149,6 +149,12 @@ except:
         else:
             return s
 
+# Basestring for typechecking
+try:
+    basestring
+except:
+    basestring = str
+
 
 def build_tuple_mapper(mlist):
     '''
@@ -936,7 +942,7 @@ class QSettingsManager(ConfigManagerBase):
                             list: v.toStringList,
                         }
                         v = type_munge[dt]()
-                    elif vt != dt and vt == unicode:
+                    elif vt != dt and vt == basestring:
                         # Value is stored as unicode so munge it
                         type_munge = {
                             int: lambda x: int(x),
