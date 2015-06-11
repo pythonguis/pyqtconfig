@@ -13,6 +13,7 @@ import types
 from collections import defaultdict, OrderedDict
 import operator
 import logging
+import six
 
 try:
     import xml.etree.cElementTree as et
@@ -914,29 +915,29 @@ class QSettingsManager(ConfigManagerBase):
     def _get(self, key):
         with QMutexLocker(self.mutex):
 
-            v = self.settings.value(key, None)
-            if v is not None:
-                if type(v) == QVariant and v.type() == QVariant.Invalid:  # Invalid check for Qt4
+            value = self.settings.value(key, None)
+            if value is not None:
+                if isinstance(value, QVariant) and value == QVariant.Invalid:  # Invalid check for Qt4
                     return None
 
                 # Map type to that in defaults: required in case QVariant is a string
                 # representation of the actual value (e.g. on Windows Reg)
-                vt = type(v)
                 if key in self.defaults:
-                    dt = type(self.defaults[key])
-                    if vt == QVariant:
+                    default_value = self.defaults[key]
+                    if isinstance(value, QVariant):
                         # The target type is a QVariant so munge it
                         # If QVariant (Qt4):
                         type_munge = {
-                            int: v.toInt,
-                            float: v.toFloat,
-                            str: v.toString,
-                            unicode: v.toString,
-                            bool: v.toBool,
-                            list: v.toStringList,
+                            int: value.toInt,
+                            float: value.toFloat,
+                            str: value.toString,
+                            unicode: value.toString,
+                            bool: value.toBool,
+                            list: value.toStringList,
                         }
-                        v = type_munge[dt]()
-                    elif vt != dt and vt == unicode:
+                        value = type_munge[default_value]()
+                    elif type(value) != type(default_value) and \
+                            isinstance(value, six.string_types):
                         # Value is stored as unicode so munge it
                         type_munge = {
                             int: lambda x: int(x),
@@ -945,12 +946,9 @@ class QSettingsManager(ConfigManagerBase):
                             bool: lambda x: x.lower() == u'true',
                             # other types?
                         }
-                        v = type_munge[dt](v)
-
-                    v = dt(v)
-
-                return v
-
+                        value = type_munge[type(default_value)](value)
+                    value = type(default_value)(value)
+                return value
             else:
                 return None
 
