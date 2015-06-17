@@ -799,13 +799,8 @@ class ConfigManagerBase(QObject):
 
 
         # Look for class in hooks and add getter, setter, updater
-        iterator = (hooks for (cls, hooks) in self.hooks.items()
-                    if isinstance(handler, cls))
-        try:
-            hookg, hooks, hooku = next(iterator)
-        except StopIteration:
-            raise TypeError("No handler-functions available for this widget "
-                            "type (%s)" % type(handler).__name__)
+        cls = self._get_hook(handler)
+        hookg, hooks, hooku = self.hooks[cls]
 
         handler.getter = types_MethodType(hookg, handler)
         handler.setter = types_MethodType(hooks, handler)
@@ -833,6 +828,19 @@ class ConfigManagerBase(QObject):
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
+
+    def _get_hook(self, handler):
+        fst = lambda x: next(x, None)
+
+        cls = fst(x for x in self.hooks.keys() if x == type(handler))
+        if cls is None:
+            cls = fst(x for x in self.hooks.keys() if isinstance(handler, x))
+
+        if cls is None:
+            raise TypeError("No handler-functions available for this widget "
+                            "type (%s)" % type(handler).__name__)
+        return cls
+
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
