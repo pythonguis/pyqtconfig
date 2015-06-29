@@ -659,7 +659,8 @@ class ConfigManagerBase(QObject):
             :type value: Any supported (str, int, bool, list-of-supported-types)
             :rtype: bool (success)   
         """
-        if self._get(key) == value:
+        old = self._get(key)
+        if old is not None and old == value:
             return False  # Not updating
 
         # Set value
