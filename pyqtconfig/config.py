@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 import logging
 
 # Import PyQt5 classes
+from PyQt5.QtWidgets import QComboBox, QSpinBox, QDoubleSpinBox, QAction, \
+    QActionGroup, QPushButton, QSpinBox, QDoubleSpinBox, QPlainTextEdit, \
+    QLineEdit, QListWidget, QSlider, QButtonGroup
 from .qt import *
 
 import os
@@ -140,14 +143,18 @@ try:
     # Python2.7
     unicode
 except:
-
-
     # Python3 recoding
     def unicode(s):
         if isinstance(s, bytes):
             return s.decode('utf-8')
         else:
             return s
+
+# Basestring for typechecking
+try:
+    basestring
+except:
+    basestring = str
 
 
 def build_tuple_mapper(mlist):
@@ -574,25 +581,19 @@ def _event_QButtonGroup(self):
     
 
 HOOKS = {
-    'QComboBox': (_get_QComboBox, _set_QComboBox, _event_QComboBox),
-    'QCheckBox': (_get_QCheckBox, _set_QCheckBox, _event_QCheckBox),
-    'QAction': (_get_QAction, _set_QAction, _event_QAction),
-    'QActionGroup': (_get_QActionGroup, _set_QActionGroup, _event_QActionGroup),
-    'QPushButton': (_get_QPushButton, _set_QPushButton, _event_QPushButton),
-    'QSpinBox': (_get_QSpinBox, _set_QSpinBox, _event_QSpinBox),
-    'QDoubleSpinBox': (_get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
-    'QPlainTextEdit': (_get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
-    'QLineEdit': (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
-    'CodeEditor': (_get_CodeEditor, _set_CodeEditor, _event_CodeEditor),
-    'QListWidget': (_get_QListWidget, _set_QListWidget, _event_QListWidget),
-    'QListWidgetAddRemove': (_get_QListWidgetAddRemove, _set_QListWidgetAddRemove, _event_QListWidgetAddRemove),
-    'QColorButton': (_get_QColorButton, _set_QColorButton, _event_QColorButton),
-    'QNoneDoubleSpinBox': (_get_QNoneDoubleSpinBox, _set_QNoneDoubleSpinBox, _event_QNoneDoubleSpinBox),
-    'QCheckTreeWidget': (_get_QCheckTreeWidget, _set_QCheckTreeWidget, _event_QCheckTreeWidget),
-    'QSlider': (_get_QSlider, _set_QSlider, _event_QSlider),
-    'QButtonGroup': (_get_QButtonGroup, _set_QButtonGroup, _event_QButtonGroup),
+    QComboBox: (_get_QComboBox, _set_QComboBox, _event_QComboBox),
+    QCheckBox: (_get_QCheckBox, _set_QCheckBox, _event_QCheckBox),
+    QAction: (_get_QAction, _set_QAction, _event_QAction),
+    QActionGroup: (_get_QActionGroup, _set_QActionGroup, _event_QActionGroup),
+    QPushButton: (_get_QPushButton, _set_QPushButton, _event_QPushButton),
+    QSpinBox: (_get_QSpinBox, _set_QSpinBox, _event_QSpinBox),
+    QDoubleSpinBox: (_get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
+    QPlainTextEdit: (_get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
+    QLineEdit: (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
+    QListWidget: (_get_QListWidget, _set_QListWidget, _event_QListWidget),
+    QSlider: (_get_QSlider, _set_QSlider, _event_QSlider),
+    QButtonGroup: (_get_QButtonGroup, _set_QButtonGroup, _event_QButtonGroup)
 }
-
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file (for workspace saving)
@@ -768,7 +769,8 @@ class ConfigManagerBase(QObject):
     # and updated from the config manager. Allows instantaneous updating on config
     # changes and ensuring that elements remain in sync
 
-    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x), auto_set_default=True):
+    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x),
+                    auto_set_default=True, default=None):
         """
         Add a handler (UI element) for a given config key.
         
@@ -782,10 +784,10 @@ class ConfigManagerBase(QObject):
 
         """
         # Add map handler for converting displayed values to internal config data
-        if type(mapper) == dict or type(mapper) == OrderedDict:  # By default allow dict types to be used
+        if isinstance(mapper, (dict, OrderedDict)):  # By default allow dict types to be used
             mapper = build_dict_mapper(mapper)
 
-        elif type(mapper) == list and type(mapper[0]) == tuple:
+        elif isinstance(mapper, list) and isinstance(mapper[0], tuple):
             mapper = build_tuple_mapper(mapper)
 
         handler._get_map, handler._set_map = mapper
@@ -795,17 +797,18 @@ class ConfigManagerBase(QObject):
 
         self.handlers[key] = handler
 
-        if type(handler).__name__  not in self.hooks:
-            assert False, "No handler-functions available for this widget type (%s)" % type(handler).__name__
-           
-        hookg, hooks, hooku = self.hooks[type(handler).__name__]
+
+        # Look for class in hooks and add getter, setter, updater
+        cls = self._get_hook(handler)
+        hookg, hooks, hooku = self.hooks[cls]
 
         handler.getter = types_MethodType(hookg, handler)
         handler.setter = types_MethodType(hooks, handler)
         handler.updater = types_MethodType(hooku, handler)
 
         logging.debug("Add handler %s for %s" % (type(handler).__name__, key))
-        handler_callback = lambda x = None: self.set(key, handler.getter(), trigger_handler=False)
+        handler_callback = lambda x = None: self.set(key, handler.getter(),
+                                                     trigger_handler=False)
         handler.updater().connect(handler_callback)
 
         # Store this so we can issue a specific remove on deletes
@@ -813,7 +816,10 @@ class ConfigManagerBase(QObject):
 
         # If the key is not in defaults, set the default to match the handler
         if key not in self.defaults:
-            self.set_default(key, handler.getter())
+            if default is None:
+                self.set_default(key, handler.getter())
+            else:
+                self.set_default(key, default)
 
         # Keep handler and data consistent
         if self._get(key) is not None:
@@ -822,6 +828,19 @@ class ConfigManagerBase(QObject):
         # If the key is in defaults; set the handler to the default state (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
+
+    def _get_hook(self, handler):
+        fst = lambda x: next(x, None)
+
+        cls = fst(x for x in self.hooks.keys() if x == type(handler))
+        if cls is None:
+            cls = fst(x for x in self.hooks.keys() if isinstance(handler, x))
+
+        if cls is None:
+            raise TypeError("No handler-functions available for this widget "
+                            "type (%s)" % type(handler).__name__)
+        return cls
+
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
@@ -936,7 +955,7 @@ class QSettingsManager(ConfigManagerBase):
                             list: v.toStringList,
                         }
                         v = type_munge[dt]()
-                    elif vt != dt and vt == unicode:
+                    elif vt != dt and vt == basestring:
                         # Value is stored as unicode so munge it
                         type_munge = {
                             int: lambda x: int(x),
