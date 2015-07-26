@@ -3,9 +3,6 @@ from __future__ import unicode_literals
 import logging
 
 # Import PyQt5 classes
-from PyQt5.QtWidgets import QComboBox, QSpinBox, QDoubleSpinBox, QAction, \
-    QActionGroup, QPushButton, QSpinBox, QDoubleSpinBox, QPlainTextEdit, \
-    QLineEdit, QListWidget, QSlider, QButtonGroup
 from .qt import *
 
 import os
