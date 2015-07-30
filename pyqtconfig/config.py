@@ -19,6 +19,11 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
+try:
+    QVariant
+except NameError:
+    QVariant = None
+            
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
