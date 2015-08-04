@@ -579,7 +579,28 @@ def _event_QButtonGroup(self):
         Return button clicked signal for QButtonGroup
     """
     return self.buttonClicked
-    
+
+
+#QTabWidget
+def _get_QTabWidget(self):
+    """
+        Get the current tabulator index
+    """
+    return self.currentIndex()
+
+
+def _set_QTabWidget(self, v):
+    """
+        Set the current tabulator index
+    """
+    self.setCurrentIndex(v)
+
+
+def _event_QTabWidget(self):
+    """
+        Return currentChanged signal for QTabWidget
+    """
+    return self.currentChanged    
     
 
 HOOKS = {
@@ -594,7 +615,8 @@ HOOKS = {
     QLineEdit: (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
     QListWidget: (_get_QListWidget, _set_QListWidget, _event_QListWidget),
     QSlider: (_get_QSlider, _set_QSlider, _event_QSlider),
-    QButtonGroup: (_get_QButtonGroup, _set_QButtonGroup, _event_QButtonGroup)
+    QButtonGroup: (_get_QButtonGroup, _set_QButtonGroup, _event_QButtonGroup),
+    QTabWidget: (_get_QTabWidget, _set_QTabWidget, _event_QTabWidget)
 }
 
 # ConfigManager handles configuration for a given appview
