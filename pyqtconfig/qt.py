@@ -60,7 +60,7 @@ elif USE_QT_PY == PYQT4:
         sip.setapi('QString', 2)
         sip.setapi('QVariant', 2)
     except:
-        print "Using QVariant and QString version 1"
+        print("Using QVariant and QString version 1")
         pass
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
