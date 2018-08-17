@@ -1,7 +1,10 @@
-from .qt import *
+import sys
 from pyqtconfig import ConfigManager
 
-    
+from .qt import (QComboBox, QCheckBox, QSpinBox, QMainWindow,
+                QLineEdit, QApplication, QTextEdit,
+                QGridLayout, QWidget)
+
 class MainWindow(QMainWindow):
 
     def __init__(self):

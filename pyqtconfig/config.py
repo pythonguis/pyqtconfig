@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
+''' PyQtConfig is a simple API for handling, persisting and synchronising
+    configuration within PyQt applications.
+'''
 from __future__ import unicode_literals
 import logging
 
-# Import PyQt5 classes
-from .qt import *
-
-import os
-import sys
-import numpy as np
 import types
+from collections import OrderedDict
 
-from collections import defaultdict, OrderedDict
-import operator
-import logging
-
+# Import PyQt5 classes
+from .qt import (QComboBox, QCheckBox, QAction,
+                 QActionGroup, QPushButton, QSpinBox,
+                 QDoubleSpinBox, QPlainTextEdit, QLineEdit,
+                 QListWidget, QSlider, QButtonGroup,
+                 QTabWidget, QVariant, Qt, QMutex, QMutexLocker, QSettings,
+                 QObject, pyqtSignal)
 try:
     import xml.etree.cElementTree as et
 except ImportError:
@@ -23,7 +24,7 @@ try:
     QVariant
 except NameError:
     QVariant = None
-            
+
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
 
@@ -37,10 +38,11 @@ def types_MethodType(fn, handler):
 
 def _convert_list_type_from_XML(vs):
     '''
-    Lists are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
+    Lists are a complex type with possibility for mixed sub-types. Therefore
+    each sub-entity must be wrapped with a type specifier.
     '''
-    vlist = vs.findall('ListItem') + vs.findall('ConfigListItem')  # ConfigListItem is legacy
+    # ConfigListItem is legacy
+    vlist = vs.findall('ListItem') + vs.findall('ConfigListItem')
     l = []
     for xconfig in vlist:
         v = xconfig.text
@@ -53,8 +55,8 @@ def _convert_list_type_from_XML(vs):
 
 def _convert_list_type_to_XML(co, vs):
     '''
-    Lists are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
+    Lists are a complex type with possibility for mixed sub-types. Therefore
+    each sub-entity must be wrapped with a type specifier.
     '''
     for cv in vs:
         c = et.SubElement(co, "ListItem")
@@ -66,8 +68,8 @@ def _convert_list_type_to_XML(co, vs):
 
 def _convert_dict_type_from_XML(vs):
     '''
-    Dicts are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
+    Dicts are a complex type with possibility for mixed sub-types. Therefore
+    each sub-entity must be wrapped with a type specifier.
     '''
     vlist = vs.findall('DictItem')
     d = {}
@@ -82,8 +84,8 @@ def _convert_dict_type_from_XML(vs):
 
 def _convert_dict_type_to_XML(co, vs):
     '''
-    Dicts are a complex type with possibility for mixed sub-types. Therefore each
-    sub-entity must be wrapped with a type specifier.
+    Dicts are a complex type with possibility for mixed sub-types. Therefore
+    each sub-entity must be wrapped with a type specifier.
     '''
     for k, v in vs.items():
         c = et.SubElement(co, "DictItem")
@@ -97,6 +99,7 @@ def _convert_dict_type_to_XML(co, vs):
 def _apply_text_str(co, s):
     co.text = str(s)
     return co
+
 
 CONVERT_TYPE_TO_XML = {
     'str': _apply_text_str,
@@ -125,54 +128,59 @@ CONVERT_TYPE_FROM_XML = {
 
 def build_dict_mapper(mdict):
     '''
-    Build a map function pair for forward and reverse mapping from a specified dict
-    
-    Mapping requires both a forward and reverse (get, set) mapping function. This function
-    is used to automatically convert a supplied dict to a forward and reverse paired lambda.
-    
-    :param mdict: A dictionary of display values (keys) and stored values (values)
+    Build a map function pair for forward and reverse mapping from a specified
+    dict
+
+    Mapping requires both a forward and reverse (get, set) mapping function.
+    This function is used to automatically convert a supplied dict to a forward
+    and reverse paired lambda.
+
+    :param mdict: A dictionary of display values (keys) and stored values
+                  (values)
     :type mdict: dict
     :rtype: 2-tuple of lambdas that perform forward and reverse map
-                
+
     '''
     rdict = {v: k for k, v in mdict.items()}
     return (
         lambda x: mdict[x] if x in mdict else x,
         lambda x: rdict[x] if x in rdict else x,
-        )
+    )
+
 
 try:
     # Python2.7
     unicode
-except:
+except NameError:
     # Python3 recoding
     def unicode(s):
         if isinstance(s, bytes):
             return s.decode('utf-8')
-        else:
-            return s
+        return s
 
 # Basestring for typechecking
 try:
     basestring
-except:
+except NameError:
     basestring = str
 
 
 def build_tuple_mapper(mlist):
     '''
-    Build a map function pair for forward and reverse mapping from a specified list of tuples
-    
-    :param mlist: A list of tuples of display values (keys) and stored values (values)
+    Build a map function pair for forward and reverse mapping from a specified
+    list of tuples
+
+    :param mlist: A list of tuples of display values (keys) and stored values
+                  (values)
     :type mlist: list-of-tuples
     :rtype: 2-tuple of lambdas that perform forward and reverse map
-                
+
     '''
     rdict = {v: k for k, v in mlist}
     return (
-        lambda x: mdict[x] if x in mdict else x,
+        lambda x: mlist[x] if x in mlist else x,
         lambda x: rdict[x] if x in rdict else x,
-        )
+    )
 
 
 # CUSTOM HANDLERS
@@ -250,8 +258,7 @@ def _get_QActionGroup(self):
     """
     if self.checkedAction():
         return self.actions().index(self.checkedAction())
-    else:
-        return None
+    return None
 
 
 def _set_QActionGroup(self, v):
@@ -352,10 +359,10 @@ def _set_QPlainTextEdit(self, v):
 def _event_QPlainTextEdit(self):
     """
         Return current value changed signal for QPlainTextEdit box.
-        
-        Note that this is not a native Qt signal but a signal manually fired on 
-        the user's pressing the "Apply changes" to the code button. Attaching to the 
-        modified signal would trigger recalculation on every key-press.
+
+        Note that this is not a native Qt signal but a signal manually fired on
+        the user's pressing the "Apply changes" to the code button. Attaching
+        to the modified signal would trigger recalculation on every key-press.
     """
     return self.sourceChangesApplied
 
@@ -399,7 +406,8 @@ def _set_CodeEditor(self, v):
 
 def _event_CodeEditor(self):
     """
-        Return current value changed signal for CodeEditor box. Wraps _event_QPlainTextEdit.
+        Return current value changed signal for
+        CodeEditor box. Wraps _event_QPlainTextEdit.
     """
     return _event_QPlainTextEdit(self)
 
@@ -408,7 +416,7 @@ def _event_CodeEditor(self):
 def _get_QListWidget(self):
     """
         Get currently selected values in QListWidget via re-mapping filter.
-        
+
         Selected values are returned as a list.
     """
     return [self._get_map(s.text()) for s in self.selectedItems()]
@@ -417,12 +425,14 @@ def _get_QListWidget(self):
 def _set_QListWidget(self, v):
     """
         Set currently selected values in QListWidget via re-mapping filter.
-        
+
         Supply values to be selected as a list.
     """
     if v:
         for s in v:
-            self.findItems(unicode(self._set_map(s)), Qt.MatchExactly)[0].setSelected(True)
+            self.findItems(
+                unicode(self._set_map(s)),
+                Qt.MatchExactly)[0].setSelected(True)
 
 
 def _event_QListWidget(self):
@@ -436,7 +446,7 @@ def _event_QListWidget(self):
 def _get_QListWidgetAddRemove(self):
     """
         Get current values in QListWidget via re-mapping filter.
-        
+
         Selected values are returned as a list.
     """
     return [self._get_map(self.item(n).text()) for n in range(0, self.count())]
@@ -445,7 +455,7 @@ def _get_QListWidgetAddRemove(self):
 def _set_QListWidgetAddRemove(self, v):
     """
         Set currently values in QListWidget via re-mapping filter.
-        
+
         Supply values to be selected as a list.
     """
     block = self.blockSignals(True)
@@ -506,11 +516,11 @@ def _event_QNoneDoubleSpinBox(self):
     return self.valueChanged
 
 
-#QCheckTreeWidget
+# QCheckTreeWidget
 def _get_QCheckTreeWidget(self):
     """
         Get currently checked values in QCheckTreeWidget via re-mapping filter.
-        
+
         Selected values are returned as a list.
     """
     return [self._get_map(s) for s in self._checked_item_cache]
@@ -519,12 +529,14 @@ def _get_QCheckTreeWidget(self):
 def _set_QCheckTreeWidget(self, v):
     """
         Set currently checked values in QCheckTreeWidget via re-mapping filter.
-        
+
         Supply values to be selected as a list.
     """
     if v:
         for s in v:
-            f = self.findItems(unicode(self._set_map(s)), Qt.MatchExactly | Qt.MatchRecursive)
+            f = self.findItems(
+                unicode(self._set_map(s)),
+                Qt.MatchExactly | Qt.MatchRecursive)
             if f:
                 f[0].setCheckState(0, Qt.Checked)
 
@@ -534,8 +546,8 @@ def _event_QCheckTreeWidget(self):
         Return current checked changed signal for QCheckTreeWidget.
     """
     return self.itemCheckedChanged
-    
-    
+
+
 # QSlider
 def _get_QSlider(self):
     """
@@ -556,9 +568,9 @@ def _event_QSlider(self):
         Return value change signal for QSlider
     """
     return self.valueChanged
-	
 
-#QButtonGroup
+
+# QButtonGroup
 def _get_QButtonGroup(self):
     """
         Get a list of (index, checked) tuples for the buttons in the group
@@ -568,7 +580,8 @@ def _get_QButtonGroup(self):
 
 def _set_QButtonGroup(self, v):
     """
-        Set the states for all buttons in a group from a list of (index, checked) tuples
+        Set the states for all buttons in a group from a list of
+        (index, checked) tuples
     """
     for idx, state in v:
         self.buttons()[idx].setChecked(state)
@@ -581,7 +594,7 @@ def _event_QButtonGroup(self):
     return self.buttonClicked
 
 
-#QTabWidget
+# QTabWidget
 def _get_QTabWidget(self):
     """
         Get the current tabulator index
@@ -600,8 +613,8 @@ def _event_QTabWidget(self):
     """
         Return currentChanged signal for QTabWidget
     """
-    return self.currentChanged    
-    
+    return self.currentChanged
+
 
 HOOKS = {
     QComboBox: (_get_QComboBox, _set_QComboBox, _event_QComboBox),
@@ -610,8 +623,10 @@ HOOKS = {
     QActionGroup: (_get_QActionGroup, _set_QActionGroup, _event_QActionGroup),
     QPushButton: (_get_QPushButton, _set_QPushButton, _event_QPushButton),
     QSpinBox: (_get_QSpinBox, _set_QSpinBox, _event_QSpinBox),
-    QDoubleSpinBox: (_get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
-    QPlainTextEdit: (_get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
+    QDoubleSpinBox: (
+        _get_QDoubleSpinBox, _set_QDoubleSpinBox, _event_QDoubleSpinBox),
+    QPlainTextEdit: (
+        _get_QPlainTextEdit, _set_QPlainTextEdit, _event_QPlainTextEdit),
     QLineEdit: (_get_QLineEdit, _set_QLineEdit, _event_QLineEdit),
     QListWidget: (_get_QListWidget, _set_QListWidget, _event_QListWidget),
     QSlider: (_get_QSlider, _set_QSlider, _event_QSlider),
@@ -619,12 +634,15 @@ HOOKS = {
     QTabWidget: (_get_QTabWidget, _set_QTabWidget, _event_QTabWidget)
 }
 
+
 # ConfigManager handles configuration for a given appview
-# Supports default values, change signals, export/import from file (for workspace saving)
+# Supports default values, change signals, export/import from file
+# (for workspace saving)
 class ConfigManagerBase(QObject):
 
     # Signals
-    updated = pyqtSignal(int)  # Triggered anytime configuration is changed (refresh)
+    # Triggered anytime configuration is changed (refresh)
+    updated = pyqtSignal(int)
 
     def __init__(self, defaults=None, *args, **kwargs):
         super(ConfigManagerBase, self).__init__(*args, **kwargs)
@@ -634,8 +652,9 @@ class ConfigManagerBase(QObject):
         self.reset()
         if defaults is None:
             defaults = {}
-        
-        self.defaults = defaults  # Same mapping as above, used when config not set
+
+        # Same mapping as above, used when config not set
+        self.defaults = defaults
 
     def _get(self, key):
         with QMutexLocker(self.mutex):
@@ -653,12 +672,12 @@ class ConfigManagerBase(QObject):
 
     # Get config
     def get(self, key):
-        """ 
+        """
             Get config value for a given key from the config manager.
-            
-            Returns the value that matches the supplied key. If the value is not set a
-            default value will be returned as set by set_defaults.
-            
+
+            Returns the value that matches the supplied key. If the value is
+            not set a default value will be returned as set by set_defaults.
+
             :param key: The configuration key to return a config value for
             :type key: str
             :rtype: Any supported (str, int, bool, list-of-supported-types)
@@ -666,22 +685,22 @@ class ConfigManagerBase(QObject):
         v = self._get(key)
         if v is not None:
             return v
-        else:
-            return self._get_default(key)
+        return self._get_default(key)
 
     def set(self, key, value, trigger_handler=True, trigger_update=True):
-        """ 
+        """
             Set config value for a given key in the config manager.
-            
-            Set key to value. The optional trigger_update determines whether event hooks
-            will fire for this key (and so re-calculation). It is useful to suppress these
-            when updating multiple values for example.
-            
+
+            Set key to value. The optional trigger_update determines whether
+            event hooks will fire for this key (and so re-calculation). It is
+            useful to suppress these when updating multiple values for example.
+
             :param key: The configuration key to set
             :type key: str
             :param value: The value to set the configuration key to
-            :type value: Any supported (str, int, bool, list-of-supported-types)
-            :rtype: bool (success)   
+            :type value: Any supported
+                         (str, int, bool, list-of-supported-types)
+            :rtype: bool (success)
         """
         old = self._get(key)
         if old is not None and old == value:
@@ -700,7 +719,9 @@ class ConfigManagerBase(QObject):
 
         # Trigger update notification
         if trigger_update:
-            self.updated.emit(self.eventhooks[key] if key in self.eventhooks else RECALCULATE_ALL)
+            self.updated.emit(
+                self.eventhooks[key] if key in self.eventhooks
+                else RECALCULATE_ALL)
 
         return True
 
@@ -708,18 +729,21 @@ class ConfigManagerBase(QObject):
     def set_default(self, key, value, eventhook=RECALCULATE_ALL):
         """
         Set the default value for a given key.
-        
-        This will be returned if the value is 
-        not set in the current config. It is important to include defaults for all 
-        possible config values for backward compatibility with earlier versions of a plugin.
-        
+
+        This will be returned if the value is
+        not set in the current config. It is important to include defaults for
+        all possible config values for backward compatibility with earlier
+        versions of a plugin.
+
         :param key: The configuration key to set
         :type key: str
         :param value: The value to set the configuration key to
         :type value: Any supported (str, int, bool, list-of-supported-types)
-        :param eventhook: Attach either a full recalculation trigger (default), or a view-only recalculation trigger to these values.
+        :param eventhook: Attach either a full recalculation trigger
+                          (default), or a view-only recalculation trigger
+                          to these values.
         :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
-        
+
         """
 
         self.defaults[key] = value
@@ -729,39 +753,42 @@ class ConfigManagerBase(QObject):
     def set_defaults(self, keyvalues, eventhook=RECALCULATE_ALL):
         """
         Set the default value for a set of keys.
-        
-        These will be returned if the value is 
-        not set in the current config. It is important to include defaults for all 
-        possible config values for backward compatibility with earlier versions of a plugin.
-        
+
+        These will be returned if the value is
+        not set in the current config. It is important to include defaults for
+        all possible config values for backward compatibility with earlier
+        versions of a plugin.
+
         :param keyvalues: A dictionary of keys and values to set as defaults
         :type key: dict
-        :param eventhook: Attach either a full recalculation trigger (default), or a view-only recalculation trigger to these values.
+        :param eventhook: Attach either a full recalculation trigger (default),
+                          or a view-only recalculation trigger to these values.
         :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
-        
+
         """
         for key, value in list(keyvalues.items()):
             self.defaults[key] = value
             self.eventhooks[key] = eventhook
 
-        # Updating the defaults may update the config (if anything without a config value
-        # is set by it; should check)
+        # Updating the defaults may update the config (if anything
+        # without a config value is set by it; should check)
         self.updated.emit(eventhook)
     # Completely replace current config (wipe all other settings)
 
-    def replace(self, keyvalues, trigger_update=True):
+    def replace(self, keyvalues):
         """
         Completely reset the config with a set of key values.
-        
-        Note that this does not wipe handlers or triggers (see reset), it simply replaces the values
-        in the config entirely. It is the equivalent of unsetting all keys, followed by a
-        set_many. Anything not in the supplied keyvalues will revert to default.
-        
+
+        Note that this does not wipe handlers or triggers (see reset), it
+        simply replaces the values in the config entirely. It is the
+        equivalent of unsetting all keys, followed by a set_many.
+        Anything not in the supplied keyvalues will revert to default.
+
         :param keyvalues: A dictionary of keys and values to set as defaults
         :type keyvalues: dict
-        :param trigger_update: Flag whether to trigger a config update (+recalculation) after all values are set. 
-        :type trigger_update: bool
-        
+        :param trigger_update: Flag whether to trigger a config update
+                               (+recalculation) after all values are set.
+
         """
         self.config = []
         self.set_many(keyvalues)
@@ -769,14 +796,15 @@ class ConfigManagerBase(QObject):
     def set_many(self, keyvalues, trigger_update=True):
         """
         Set the value of multiple config settings simultaneously.
-        
-        This postpones the 
-        triggering of the update signal until all values are set to prevent excess signals.
-        The trigger_update option can be set to False to prevent any update at all.
-            
+
+        This postpones the triggering of the update signal until all values
+        are set to prevent excess signals. The trigger_update option can be
+        set to False to prevent any update at all.
+
         :param keyvalues: A dictionary of keys and values to set.
         :type key: dict
-        :param trigger_update: Flag whether to trigger a config update (+recalculation) after all values are set. 
+        :param trigger_update: Flag whether to trigger a config update
+                               (+recalculation) after all values are set.
         :type trigger_update: bool
         """
         has_updated = False
@@ -790,26 +818,29 @@ class ConfigManagerBase(QObject):
         return has_updated
     # HANDLERS
 
-    # Handlers are UI elements (combo, select, checkboxes) that automatically update
-    # and updated from the config manager. Allows instantaneous updating on config
-    # changes and ensuring that elements remain in sync
+    # Handlers are UI elements (combo, select, checkboxes) that automatically
+    # update and updated from the config manager. Allows instantaneous
+    # updating on config changes and ensuring that elements remain in sync
 
     def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x),
-                    auto_set_default=True, default=None):
+                    default=None):
         """
         Add a handler (UI element) for a given config key.
-        
-        The supplied handler should be a QWidget or QAction through which the user
-        can change the config setting. An automatic getter, setter and change-event
-        handler is attached which will keep the widget and config in sync. The attached
-        handler will default to the correct value from the current config.
-        
-        An optional mapper may also be provider to handler translation from the values
-        shown in the UI and those saved/loaded from the config.
+
+        The supplied handler should be a QWidget or QAction through which
+        the user can change the config setting. An automatic getter, setter
+        and change-event handler is attached which will keep the widget
+        and config in sync. The attached handler will default to the correct
+        value from the current config.
+
+        An optional mapper may also be provider to handler translation from
+        the values shown in the UI and those saved/loaded from the config.
 
         """
-        # Add map handler for converting displayed values to internal config data
-        if isinstance(mapper, (dict, OrderedDict)):  # By default allow dict types to be used
+        # Add map handler for converting displayed values to
+        # internal config data
+        if isinstance(mapper, (dict, OrderedDict)):
+            # By default allow dict types to be used
             mapper = build_dict_mapper(mapper)
 
         elif isinstance(mapper, list) and isinstance(mapper[0], tuple):
@@ -817,11 +848,11 @@ class ConfigManagerBase(QObject):
 
         handler._get_map, handler._set_map = mapper
 
-        if key in self.handlers:  # Already there; so skip must remove first to replace
+        if key in self.handlers:
+            # Already there; so skip must remove first to replace
             return
 
         self.handlers[key] = handler
-
 
         # Look for class in hooks and add getter, setter, updater
         cls = self._get_hook(handler)
@@ -832,8 +863,8 @@ class ConfigManagerBase(QObject):
         handler.updater = types_MethodType(hooku, handler)
 
         logging.debug("Add handler %s for %s" % (type(handler).__name__, key))
-        handler_callback = lambda x = None: self.set(key, handler.getter(),
-                                                     trigger_handler=False)
+        handler_callback = lambda x=None: self.set(key, handler.getter(),
+                                                   trigger_handler=False)
         handler.updater().connect(handler_callback)
 
         # Store this so we can issue a specific remove on deletes
@@ -850,7 +881,8 @@ class ConfigManagerBase(QObject):
         if self._get(key) is not None:
             handler.setter(self._get(key))
 
-        # If the key is in defaults; set the handler to the default state (but don't add to config)
+        # If the key is in defaults; set the handler to the default state
+        # (but don't add to config)
         elif key in self.defaults:
             handler.setter(self.defaults[key])
 
@@ -865,7 +897,6 @@ class ConfigManagerBase(QObject):
             raise TypeError("No handler-functions available for this widget "
                             "type (%s)" % type(handler).__name__)
         return cls
-
 
     def add_handlers(self, keyhandlers):
         for key, handler in list(keyhandlers.items()):
@@ -895,7 +926,8 @@ class ConfigManagerBase(QObject):
 
         config = {}
         for xconfig in root.findall('Config/ConfigSetting'):
-            #id="experiment_control" type="unicode" value="monocyte at intermediate differentiation stage (GDS2430_2)"/>
+            # id="experiment_control" type="unicode" value="monocyte
+            # at intermediate differentiation stage (GDS2430_2)"/>
             if xconfig.get('type') in CONVERT_TYPE_FROM_XML:
                 v = CONVERT_TYPE_FROM_XML[xconfig.get('type')](xconfig)
             config[xconfig.get('id')] = v
@@ -904,7 +936,8 @@ class ConfigManagerBase(QObject):
 
     def as_dict(self):
         '''
-        Return the combination of defaults and config as a flat dict (so it can be pickled)
+        Return the combination of defaults and config as a flat dict
+        (so it can be pickled)
         '''
         result_dict = {}
         for k, v in self.defaults.items():
@@ -912,14 +945,15 @@ class ConfigManagerBase(QObject):
 
         return result_dict
 
-    
+
 class ConfigManager(ConfigManagerBase):
 
     def reset(self):
-        """ 
+        """
             Reset the config manager to it's initialised state.
-            
-            This clears all values, unsets all defaults and removes all handlers, maps, and hooks.
+
+            This clears all values, unsets all defaults and removes all
+            handlers, maps, and hooks.
         """
         self.config = {}
         self.handlers = {}
@@ -927,7 +961,7 @@ class ConfigManager(ConfigManagerBase):
         self.defaults = {}
         self.maps = {}
         self.eventhooks = {}
-        
+
     def _get(self, key):
         with QMutexLocker(self.mutex):
             try:
@@ -943,10 +977,11 @@ class ConfigManager(ConfigManagerBase):
 class QSettingsManager(ConfigManagerBase):
 
     def reset(self):
-        """ 
+        """
             Reset the config manager to it's initialised state.
-            
-            This initialises QSettings, unsets all defaults and removes all handlers, maps, and hooks.
+
+            This initialises QSettings, unsets all defaults and removes all
+            handlers, maps, and hooks.
         """
         self.settings = QSettings()
         self.handlers = {}
@@ -960,11 +995,13 @@ class QSettingsManager(ConfigManagerBase):
 
             v = self.settings.value(key, None)
             if v is not None:
-                if type(v) == QVariant and v.type() == QVariant.Invalid:  # Invalid check for Qt4
+                if type(v) == QVariant and v.type() == QVariant.Invalid:
+                    # Invalid check for Qt4
                     return None
 
-                # Map type to that in defaults: required in case QVariant is a string
-                # representation of the actual value (e.g. on Windows Reg)
+                # Map type to that in defaults: required in case QVariant is a
+                # string representation of the actual value
+                # (e.g. on Windows Reg)
                 vt = type(v)
                 if key in self.defaults:
                     dt = type(self.defaults[key])
