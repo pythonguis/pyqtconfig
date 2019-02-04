@@ -23,6 +23,7 @@ source:
     # syntax is module:function.  For example
     #
     # - scaffan = scaffan:main
+  
 requirements:
   build:
     - python
