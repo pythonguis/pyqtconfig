@@ -5,7 +5,7 @@ package:
 source:
 # this is used for build from git hub
   git_rev: 0.8.8
-  git_url: https://github.com/mjirik/scaffan.git
+  git_url: https://github.com/mjirik/pyqtconfig.git
 
 # this is used for pypi
   # fn: io3d-1.0.30.tar.gz
@@ -29,10 +29,6 @@ build:
     #
     # Would create an entry point called io3d that calls scaffan.main()
 
-
-  # If this is a new build for the same version, increment the build
-  # number. If you do not include this key, it defaults to 0.
-  # number: 1
 
 requirements:
   build:
