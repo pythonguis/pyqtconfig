@@ -1,0 +1,74 @@
+package:
+  name: pyqtconfig
+  version: "0.8.8"
+
+source:
+# this is used for build from git hub
+  git_rev: 0.8.8
+  git_url: https://github.com/mjirik/scaffan.git
+
+# this is used for pypi
+  # fn: io3d-1.0.30.tar.gz
+  # url: https://pypi.python.org/packages/source/i/io3d/io3d-1.0.30.tar.gz
+  # md5: a3ce512c4c97ac2410e6dcc96a801bd8
+#  patches:
+   # List any patch files here
+   # - fix.patch
+build:
+  ignore_prefix_files:
+    - devel
+    - examples
+# build:
+  # noarch_python: True
+  # preserve_egg_dir: True
+  # entry_points:
+    # Put any entry points (scripts to be generated automatically) here. The
+    # syntax is module:function.  For example
+    #
+    # - scaffan = scaffan:main
+    #
+    # Would create an entry point called io3d that calls scaffan.main()
+
+
+  # If this is a new build for the same version, increment the build
+  # number. If you do not include this key, it defaults to 0.
+  # number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+#    - io3d
+
+  run:
+    - python
+#    - io3d>=1.21
+#    - {{ pin_compatible('io3d', max_pin='x') }}
+    # - numpy
+    # - pyqt 4.11.*
+
+test:
+  # Python imports
+  imports:
+    - pyqtconfig
+
+  # commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  # requires:
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/mfitzp/pyqtconfig
+  license: BSD License
+  summary: 'An API for keeping PyQt widgets in sync with a config dictionary or QSettings object.',
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
