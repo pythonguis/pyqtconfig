@@ -28,14 +28,11 @@ build:
     # - scaffan = scaffan:main
     #
     # Would create an entry point called io3d that calls scaffan.main()
-
-
 requirements:
   build:
     - python
     - setuptools
 #    - io3d
-
   run:
     - python
 #    - io3d>=1.21
