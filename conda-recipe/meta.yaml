@@ -26,8 +26,6 @@ build:
     # syntax is module:function.  For example
     #
     # - scaffan = scaffan:main
-    #
-    # Would create an entry point called io3d that calls scaffan.main()
 requirements:
   build:
     - python
