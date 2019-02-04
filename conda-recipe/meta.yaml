@@ -11,13 +11,10 @@ source:
   # fn: io3d-1.0.30.tar.gz
   # url: https://pypi.python.org/packages/source/i/io3d/io3d-1.0.30.tar.gz
   # md5: a3ce512c4c97ac2410e6dcc96a801bd8
-#  patches:
-   # List any patch files here
-   # - fix.patch
-build:
-  ignore_prefix_files:
-    - devel
-    - examples
+#build:
+#  ignore_prefix_files:
+#    - devel
+#    - examples
 # build:
   # noarch_python: True
   # preserve_egg_dir: True
