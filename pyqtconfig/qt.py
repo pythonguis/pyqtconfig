@@ -41,13 +41,17 @@ else:
 if USE_QT_PY == PYQT5:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
-    from PyQt5.QtWebKit import *
+    try:
+        from PyQt5.QtWebKit import *
+    except:
+        from PyQt5.QtWebEngine import *
+
     from PyQt5.QtNetwork import *
     from PyQt5.QtWidgets import *
     try:
         from PyQt5.QtWebKitWidgets import *
     except:
-        from PyQt5.QtWebEngine import *
+        pass
 
 elif USE_QT_PY == PYSIDE:
     from PySide.QtGui import *
