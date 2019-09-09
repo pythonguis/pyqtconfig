@@ -24,10 +24,10 @@ requirements:
   run:
     - python
     - pyqt
+
 test:
   imports:
     - pyqtconfig
-
   # commands:
     # You can put test commands to be run here.  Use this to test that the
     # entry points work.
