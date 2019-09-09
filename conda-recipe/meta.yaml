@@ -7,16 +7,11 @@ source:
   git_rev: 0.8.13
   git_url: https://github.com/mjirik/pyqtconfig.git
 
-  # this is used for pypi
-  # fn: io3d-1.0.30.tar.gz
-  # url: https://pypi.python.org/packages/source/i/io3d/io3d-1.0.30.tar.gz
-  # md5: a3ce512c4c97ac2410e6dcc96a801bd8
 requirements:
   build:
     - python
     - setuptools
     - pyqt
-#    #    - {{ pin_compatible('io3d', max_pin='x') }}
   run:
     - python
     - pyqt
