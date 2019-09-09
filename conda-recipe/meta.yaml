@@ -11,28 +11,6 @@ source:
   # fn: io3d-1.0.30.tar.gz
   # url: https://pypi.python.org/packages/source/i/io3d/io3d-1.0.30.tar.gz
   # md5: a3ce512c4c97ac2410e6dcc96a801bd8
-#build:
-#  ignore_prefix_files:
-#    - devel
-#    - examples
-# build:
-  # noarch_python: True
-  # preserve_egg_dir: True
-  # entry_points:
-    # Put any entry points (scripts to be generated automatically) here. The
-    # syntax is module:function.  For example
-    #
-    # - scaffan = scaffan:main
-# build:
-  # noarch_python: True
-  # preserve_egg_dir: True
-  # entry_points:
-    # Put any entry points (scripts to be generated automatically) here. The
-    # syntax is module:function.  For example
-    #
-    #    - lisa = lisa:main
-#    - lisa = lisa:lisa_main
-
 requirements:
   build:
     - python
