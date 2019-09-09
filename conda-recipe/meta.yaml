@@ -29,8 +29,11 @@ test:
 about:
   home: https://github.com/mfitzp/pyqtconfig
   license: BSD License
-  summary: 'An API for keeping PyQt widgets in sync with a config dictionary or QSettings object.',
-
+  summary: 'An API for keeping PyQT widgets in sync with a config dictionary or QSettings objects'
+#about:
+#  home: https://github.com/mfitzp/pyqtconfig
+#  license: BSD License
+#  summary: 'An API for keeping PyQt widgets in sync with a config dictionary or QSettings object.'
 # See
 # http://docs.continuum.io/conda/build.html for
 # more information about meta.yaml
