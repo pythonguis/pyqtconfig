@@ -15,13 +15,15 @@ requirements:
   build:
     - python
     - setuptools
+    - pyqt
 #    - io3d
+#    #    - io3d>=1.21
+#    #    - {{ pin_compatible('io3d', max_pin='x') }}
+#    # - numpy
+#    # - pyqt 4.11.*
   run:
     - python
-#    - io3d>=1.21
-#    - {{ pin_compatible('io3d', max_pin='x') }}
-    # - numpy
-    # - pyqt 4.11.*
+    - pyqt
 
 test:
   # Python imports
