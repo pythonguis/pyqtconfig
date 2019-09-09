@@ -16,11 +16,7 @@ requirements:
     - python
     - setuptools
     - pyqt
-#    - io3d
-#    #    - io3d>=1.21
 #    #    - {{ pin_compatible('io3d', max_pin='x') }}
-#    # - numpy
-#    # - pyqt 4.11.*
   run:
     - python
     - pyqt
@@ -28,18 +24,6 @@ requirements:
 test:
   imports:
     - pyqtconfig
-  # commands:
-    # You can put test commands to be run here.  Use this to test that the
-    # entry points work.
-
-
-  # You can also put a file called run_test.py in the recipe that will be run
-  # at test time.
-
-  # requires:
-    # Put any additional test requirements here.  For example
-    # - nose
-
 about:
   home: https://github.com/mfitzp/pyqtconfig
   license: BSD License
