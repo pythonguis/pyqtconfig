@@ -24,9 +24,7 @@ requirements:
   run:
     - python
     - pyqt
-
 test:
-  # Python imports
   imports:
     - pyqtconfig
 
