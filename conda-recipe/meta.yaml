@@ -9,17 +9,21 @@ source:
 
 build:
   noarch_python: True
-  ignore_prefix_files:
-    - devel
-    - examples
+#  ignore_prefix_files:
+#    - devel
+#    - examples
 
 requirements:
   build:
     - python
     - setuptools
+    - numpy
+    - scipy
     - pyqt
   run:
     - python
+    - numpy
+    - scipy
     - setuptools
     - pyqt
 
