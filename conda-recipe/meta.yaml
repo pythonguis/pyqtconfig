@@ -1,10 +1,10 @@
 package:
   name: pyqtconfig
-  version: "0.8.18"
+  version: "0.8.19"
 
 source:
 # this is used for build from git hub
-  git_rev: 0.8.18
+  git_rev: 0.8.19
   git_url: https://github.com/mjirik/pyqtconfig.git
 
   # build:
