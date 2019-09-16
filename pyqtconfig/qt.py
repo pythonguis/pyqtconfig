@@ -41,10 +41,17 @@ else:
 if USE_QT_PY == PYQT5:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
-    from PyQt5.QtWebKit import *
+    try:
+        from PyQt5.QtWebKit import *
+    except:
+        from PyQt5.QtWebEngine import *
+
     from PyQt5.QtNetwork import *
     from PyQt5.QtWidgets import *
-    from PyQt5.QtWebKitWidgets import *
+    try:
+        from PyQt5.QtWebKitWidgets import *
+    except:
+        pass
 
 elif USE_QT_PY == PYSIDE:
     from PySide.QtGui import *
@@ -56,8 +63,12 @@ elif USE_QT_PY == PYSIDE:
 
 elif USE_QT_PY == PYQT4:
     import sip
-    sip.setapi('QString', 2)
-    sip.setapi('QVariant', 2)
+    try:
+        sip.setapi('QString', 2)
+        sip.setapi('QVariant', 2)
+    except:
+        print("Using QVariant and QString version 1")
+        pass
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
     from PyQt4.QtWebKit import *
