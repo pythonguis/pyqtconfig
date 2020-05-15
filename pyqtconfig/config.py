@@ -2,28 +2,23 @@
 ''' PyQtConfig is a simple API for handling, persisting and synchronising
     configuration within PyQt applications.
 '''
-from __future__ import unicode_literals
 import logging
 
 import types
 from collections import OrderedDict
 
-# Import PyQt5 classes
+# Import PyQt5/PySide2 classes
 from .qt import (QComboBox, QCheckBox, QAction,
                  QActionGroup, QPushButton, QSpinBox,
                  QDoubleSpinBox, QPlainTextEdit, QLineEdit,
                  QListWidget, QSlider, QButtonGroup,
                  QTabWidget, QVariant, Qt, QMutex, QMutexLocker, QSettings,
-                 QObject, pyqtSignal)
+                 QObject, Signal)
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
-try:
-    QVariant
-except NameError:
-    QVariant = None
 
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
@@ -642,7 +637,7 @@ class ConfigManagerBase(QObject):
 
     # Signals
     # Triggered anytime configuration is changed (refresh)
-    updated = pyqtSignal(int)
+    updated = Signal(int)
 
     def __init__(self, defaults=None, *args, **kwargs):
         super(ConfigManagerBase, self).__init__(*args, **kwargs)
@@ -766,7 +761,7 @@ class ConfigManagerBase(QObject):
         :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
 
         """
-        for key, value in list(keyvalues.items()):
+        for key, value in keyvalues.items():
             self.defaults[key] = value
             self.eventhooks[key] = eventhook
 
@@ -790,7 +785,7 @@ class ConfigManagerBase(QObject):
                                (+recalculation) after all values are set.
 
         """
-        self.config = []
+        self.config = {}
         self.set_many(keyvalues)
 
     def set_many(self, keyvalues, trigger_update=True):
@@ -808,7 +803,7 @@ class ConfigManagerBase(QObject):
         :type trigger_update: bool
         """
         has_updated = False
-        for k, v in list(keyvalues.items()):
+        for k, v in keyvalues.items():
             u = self.set(k, v, trigger_update=False)
             has_updated = has_updated or u
 
