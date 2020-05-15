@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+''' This module is a header-like file for pyqtconfig.
+'''
 from __future__ import unicode_literals
 import sys
 import os
-import logging
+import importlib
 
 PYSIDE = 0
 PYQT4 = 1
@@ -24,32 +27,38 @@ elif 'PyQt5' in sys.modules:
 else:
     # Try importing in turn
     try:
-        import PyQt5
+        importlib.import_module('PyQt5')
         USE_QT_PY = PYQT5
-    except:
+    except ImportError:
         try:
-            import PyQt4
+            importlib.import_module('PyQt5')
             USE_QT_PY = PYQT4
         except ImportError:
             try:
-                import PySide
+                importlib.import_module('PyQt5')
                 USE_QT_PY = PYSIDE
-            except:
+            except ImportError:
                 pass
 
 # Import PyQt classes accessible in elsewhere through from qt import *
 if USE_QT_PY == PYQT5:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWebKit import *
-    from PyQt5.QtNetwork import *
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtWebKitWidgets import *
+    from PyQt5.QtCore import (QVariant, Qt, QMutex, QMutexLocker, QSettings,
+                              QObject, pyqtSignal)
+    from PyQt5.QtWidgets import (QComboBox, QCheckBox, QAction,
+                                 QActionGroup, QPushButton, QSpinBox,
+                                 QDoubleSpinBox, QPlainTextEdit, QLineEdit,
+                                 QListWidget, QSlider, QButtonGroup,
+                                 QTabWidget, QApplication, QGridLayout,
+                                 QTextEdit, QWidget, QMainWindow)
 
 elif USE_QT_PY == PYSIDE:
-    from PySide.QtGui import *
-    from PySide.QtCore import *
-    from PySide.QtNetwork import *
+    from PySide.QtGui import (QComboBox, QCheckBox, QAction, QMainWindow,
+                              QActionGroup, QPushButton, QSpinBox,
+                              QDoubleSpinBox, QPlainTextEdit, QLineEdit,
+                              QListWidget, QSlider, QButtonGroup, QWidget,
+                              QTabWidget, QApplication, QGridLayout, QTextEdit)
+    from PySide.QtCore import (Signal, Qt, QMutex, QMutexLocker, QSettings,
+                               QObject)
 
     pyqtSignal = Signal
 
@@ -58,7 +67,10 @@ elif USE_QT_PY == PYQT4:
     import sip
     sip.setapi('QString', 2)
     sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-    from PyQt4.QtWebKit import *
-    from PyQt4.QtNetwork import *
+    from PyQt4.QtGui import (QComboBox, QCheckBox, QAction, QMainWindow,
+                             QActionGroup, QPushButton, QSpinBox,
+                             QDoubleSpinBox, QPlainTextEdit, QLineEdit,
+                             QListWidget, QSlider, QButtonGroup, QWidget,
+                             QTabWidget, QApplication, QGridLayout, QTextEdit)
+    from PyQt4.QtCore import (QVariant, Qt, QMutex, QMutexLocker, QSettings,
+                              QObject, pyqtSignal)
