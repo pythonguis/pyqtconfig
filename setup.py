@@ -5,7 +5,7 @@ import setuptools
 setuptools.setup(
 
     name='pyqtconfig',
-    version="0.9.0",
+    version="0.9.1",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/learnpyqt/pyqtconfig',

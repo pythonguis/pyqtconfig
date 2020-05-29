@@ -359,7 +359,7 @@ def _event_QPlainTextEdit(self):
         the user's pressing the "Apply changes" to the code button. Attaching
         to the modified signal would trigger recalculation on every key-press.
     """
-    return self.sourceChangesApplied
+    return self.textChanged
 
 
 # QLineEdit
