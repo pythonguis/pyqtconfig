@@ -19,9 +19,12 @@ try:
 except ImportError:
     import xml.etree.ElementTree as et
 
+from enum import Enum
 
-RECALCULATE_ALL = 1
-RECALCULATE_VIEW = 2
+
+class Recalculate(Enum):
+    ALL = 1
+    VIEWS = 2
 
 
 def types_MethodType(fn, handler):
@@ -716,12 +719,12 @@ class ConfigManagerBase(QObject):
         if trigger_update:
             self.updated.emit(
                 self.eventhooks[key] if key in self.eventhooks
-                else RECALCULATE_ALL)
+                else Recalculate.ALL)
 
         return True
 
     # Defaults are used in absence of a set value (use for base settings)
-    def set_default(self, key, value, eventhook=RECALCULATE_ALL):
+    def set_default(self, key, value, eventhook=Recalculate.ALL):
         """
         Set the default value for a given key.
 
@@ -737,7 +740,7 @@ class ConfigManagerBase(QObject):
         :param eventhook: Attach either a full recalculation trigger
                           (default), or a view-only recalculation trigger
                           to these values.
-        :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
+        :type eventhook: int Recalculate.ALL, Recalculate.VIEWS
 
         """
 
@@ -745,7 +748,7 @@ class ConfigManagerBase(QObject):
         self.eventhooks[key] = eventhook
         self.updated.emit(eventhook)
 
-    def set_defaults(self, keyvalues, eventhook=RECALCULATE_ALL):
+    def set_defaults(self, keyvalues, eventhook=Recalculate.ALL):
         """
         Set the default value for a set of keys.
 
@@ -758,7 +761,7 @@ class ConfigManagerBase(QObject):
         :type key: dict
         :param eventhook: Attach either a full recalculation trigger (default),
                           or a view-only recalculation trigger to these values.
-        :type eventhook: int RECALCULATE_ALL, RECALCULATE_VIEWS
+        :type eventhook: int Recalculate.ALL, Recalculate.VIEWS
 
         """
         for key, value in keyvalues.items():
@@ -808,7 +811,7 @@ class ConfigManagerBase(QObject):
             has_updated = has_updated or u
 
         if has_updated and trigger_update:
-            self.updated.emit(RECALCULATE_ALL)
+            self.updated.emit(Recalculate.ALL)
 
         return has_updated
     # HANDLERS
