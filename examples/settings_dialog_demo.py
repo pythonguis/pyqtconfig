@@ -19,6 +19,9 @@ default_settings_metadata = {
             "Choice B": 26,
             "Choice C": 27
         }
+    },
+    "Setting 3": {
+        "prefer_hidden": True
     }
 }
 
@@ -45,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_config_dialog(self):
         config_copy = ConfigManager(self.config.as_dict())
         config_copy.set_metadata(self.config.metadata)
-        config_dialog = ConfigDialog(config_copy, self, cols=3, flags=Qt.WindowCloseButtonHint)
+        config_dialog = ConfigDialog(config_copy, self, cols=2, flags=Qt.WindowCloseButtonHint)
         config_dialog.setWindowTitle("Settings")
         config_dialog.setMaximumWidth(100)
         config_dialog.accepted.connect(lambda: self.update_config(config_dialog.config))
@@ -98,15 +101,32 @@ def build_config_layout(config, cols=2):
     for form in forms:
         h_layout.addLayout(form)
 
-    for i, key in enumerate(config.as_dict()):
+    num_prefer_hidden = 0
+    for k, v in config.metadata.items():
+        if "prefer_hidden" in v:
+            if v["prefer_hidden"]:
+                num_prefer_hidden += 1
+
+    num_items = len(config.as_dict()) - num_prefer_hidden
+
+    i = -1
+    for key in config.as_dict():
+        if key in config.metadata and "prefer_hidden" in config.metadata[key]:
+            # If the key doesn't want to be shown, skip this row
+            if config.metadata[key]["prefer_hidden"]:
+                continue
+
+        i += 1
+
         # Find which column to put the setting in. Columns are filled equally, with remainder to the left. Each column
         # is filled before proceeding to the next.
         f_index = 0
         for j in range(cols):
-            if (i+1) <= ceil((j+1)*len(config.as_dict())/cols):
+            if (i+1) <= ceil((j+1)*num_items/cols):
                 f_index = j
                 break
 
+        # Get the handler widget for the key
         if key in config.handlers:
             # If we've already defined a handler, use that
             input_widget = config.handlers[key]
@@ -120,7 +140,8 @@ def build_config_layout(config, cols=2):
             else:
                 config.add_handler(key, input_widget)
         else:
-            # If there's no existing handler or preferred handler, try to create a default one. If it fails, continue
+            # If there's no existing handler or preferred handler, try to create a default one. If it fails, skip this
+            # row
             config.add_handler(key)
             if key not in config.handlers:
                 continue
