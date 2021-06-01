@@ -11,6 +11,17 @@ default_settings = {
     "Setting 4": False,
 }
 
+default_settings_metadata = {
+    "Setting 2": {
+        "preferred_handler": QtWidgets.QComboBox,
+        "preferred_map_dict": {
+            "Choice A": 25,
+            "Choice B": 26,
+            "Choice C": 27
+        }
+    }
+}
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -25,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.layout.addWidget(self.settings_button)
 
         self.config = ConfigManager(default_settings)
+        self.config.set_metadata(default_settings_metadata)
         self.config.updated.connect(self.show_config)
         self.show_config()
 
@@ -32,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_config_dialog(self):
         config_copy = ConfigManager(self.config.as_dict())
-        add_default_handlers(config_copy)
+        config_copy.set_metadata(self.config.metadata)
         config_dialog = ConfigDialog(config_copy, self, cols=3, flags=Qt.WindowCloseButtonHint)
         config_dialog.setWindowTitle("Settings")
         config_dialog.setMaximumWidth(100)
@@ -40,28 +52,10 @@ class MainWindow(QtWidgets.QMainWindow):
         config_dialog.exec()
 
     def update_config(self, update):
-        self.config.set_defaults(update.as_dict())
+        self.config.set_many(update.as_dict())
 
     def show_config(self):
         self.current_config.setText(str(self.config.as_dict()))
-
-
-def add_default_handlers(config):
-    """
-    Add handlers to each config item based on its type
-
-    :param config: ConfigManager
-    """
-    for key in config.as_dict():
-        value = config.get(key)
-        if isinstance(value, str):
-            config.add_handler(key, QtWidgets.QLineEdit())
-        elif isinstance(value, float):
-            config.add_handler(key, QtWidgets.QDoubleSpinBox())
-        elif isinstance(value, bool):
-            config.add_handler(key, QtWidgets.QCheckBox())
-        elif isinstance(value, int):
-            config.add_handler(key, QtWidgets.QSpinBox())
 
 
 class ConfigDialog(QtWidgets.QDialog):
@@ -114,9 +108,27 @@ def build_config_layout(config, cols=2):
                 break
 
         if key in config.handlers:
+            # If we've already defined a handler, use that
             input_widget = config.handlers[key]
-            label = QtWidgets.QLabel(key)
-            forms[f_index].addRow(label, input_widget)
+        elif key in config.metadata and "preferred_handler" in config.metadata[key]:
+            # If there is a preferred handler in the metadata, create one of those. If there is a preferred mapper
+            # use that
+            input_widget = config.metadata[key]["preferred_handler"]()
+            if "preferred_map_dict" in config.metadata[key]:
+                input_widget.addItems(config.metadata[key]["preferred_map_dict"].keys())
+                config.add_handler(key, input_widget, mapper=config.metadata[key]["preferred_map_dict"])
+            else:
+                config.add_handler(key, input_widget)
+        else:
+            # If there's no existing handler or preferred handler, try to create a default one. If it fails, continue
+            config.add_handler(key)
+            if key not in config.handlers:
+                continue
+            else:
+                input_widget = config.handlers[key]
+
+        label = QtWidgets.QLabel(key)
+        forms[f_index].addRow(label, input_widget)
 
     return h_layout
 

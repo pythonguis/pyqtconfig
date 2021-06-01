@@ -651,6 +651,8 @@ class ConfigManagerBase(QObject):
         # Same mapping as above, used when config not set
         self.defaults = defaults
 
+        self.metadata = {}
+
     def _get(self, key):
         with QMutexLocker(self.mutex):
             try:
@@ -817,7 +819,7 @@ class ConfigManagerBase(QObject):
     # update and updated from the config manager. Allows instantaneous
     # updating on config changes and ensuring that elements remain in sync
 
-    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x),
+    def add_handler(self, key, handler=None, mapper=(lambda x: x, lambda x: x),
                     default=None):
         """
         Add a handler (UI element) for a given config key.
@@ -832,6 +834,15 @@ class ConfigManagerBase(QObject):
         the values shown in the UI and those saved/loaded from the config.
 
         """
+        if key in self.handlers:
+            # Already there; so skip must remove first to replace
+            return
+
+        if handler is None:
+            handler = self.get_default_handler(type(self.get(key)))
+            if handler is None:
+                return
+
         # Add map handler for converting displayed values to
         # internal config data
         if isinstance(mapper, (dict, OrderedDict)):
@@ -842,10 +853,6 @@ class ConfigManagerBase(QObject):
             mapper = build_tuple_mapper(mapper)
 
         handler._get_map, handler._set_map = mapper
-
-        if key in self.handlers:
-            # Already there; so skip must remove first to replace
-            return
 
         self.handlers[key] = handler
 
@@ -939,6 +946,34 @@ class ConfigManagerBase(QObject):
             result_dict[k] = self.get(k)
 
         return result_dict
+
+    def set_metadata(self, metadata):
+        """
+        Set the config manager's metadata attribute. This should be a dict with keys matching each config item for which
+        there is metadata. The metadata can include preferred handler, preferred mapper etc.
+
+        :param metadata:
+        """
+        self.metadata = metadata
+
+    @staticmethod
+    def get_default_handler(in_type):
+        """
+        Get a default handler widget based on the input type
+
+        :param in_type:
+        :return:
+        """
+        if in_type == str:
+            return QLineEdit()
+        elif in_type == float:
+            return QDoubleSpinBox()
+        elif in_type == bool:
+            return QCheckBox()
+        elif in_type == int:
+            return QSpinBox()
+        else:
+            return None
 
 
 class ConfigManager(ConfigManagerBase):
