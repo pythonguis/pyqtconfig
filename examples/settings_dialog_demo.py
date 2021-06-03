@@ -38,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.layout.addWidget(self.current_config)
         self.layout.addWidget(self.settings_button)
 
-        self.config = ConfigManager(default_settings)
+        self.config = ConfigManager(default_settings, load_file=True, filename="config/settings_config.json")
         self.config.set_metadata(default_settings_metadata)
         self.config.updated.connect(self.show_config)
         self.show_config()
@@ -56,6 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_config(self, update):
         self.config.set_many(update.as_dict())
+        self.config.save()
 
     def show_config(self):
         self.current_config.setText(str(self.config.as_dict()))

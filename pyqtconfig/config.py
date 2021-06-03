@@ -20,6 +20,9 @@ except ImportError:
     import xml.etree.ElementTree as et
 
 import warnings
+import json
+import os
+import pathlib
 
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
@@ -979,6 +982,19 @@ class ConfigManagerBase(QObject):
 
 class ConfigManager(ConfigManagerBase):
 
+    default_path = "config.json"
+
+    def __init__(self, *args, load_file=False, filename=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if filename is not None:
+            self.path = filename
+        else:
+            self.path = self.default_path
+
+        if load_file:
+            self.load()
+
     def reset(self):
         """
             Reset the config manager to it's initialised state.
@@ -1003,6 +1019,17 @@ class ConfigManager(ConfigManagerBase):
     def _set(self, key, value):
         with QMutexLocker(self.mutex):
             self.config[key] = value
+
+    def load(self):
+        if os.path.exists(self.path):
+            with open(self.path, "r") as f:
+                self.set_many(json.load(f))
+
+    def save(self):
+        pathlib.Path(self.path).parent.mkdir(parents=True, exist_ok=True)
+
+        with open(self.path, "w") as f:
+            json.dump(self.as_dict(), f, indent=4)
 
 
 class QSettingsManager(ConfigManagerBase):

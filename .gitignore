@@ -49,3 +49,6 @@ venv.bak/
 
 # Pycharm / IntelliJ
 .idea/
+
+# pyqtconfig json files
+*config.json

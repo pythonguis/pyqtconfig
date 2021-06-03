@@ -1,7 +1,7 @@
 import sys
 import pytest
 
-from PyQt5.QtWidgets import  QApplication
+from PyQt5.QtWidgets import QApplication
 from pyqtconfig import QSettingsManager
 
 
