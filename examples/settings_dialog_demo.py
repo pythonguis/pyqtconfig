@@ -39,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.layout.addWidget(self.settings_button)
 
         self.config = ConfigManager(default_settings, load_file=True, filename="config/settings_config.json")
-        self.config.set_metadata(default_settings_metadata)
+        self.config.set_many_metadata(default_settings_metadata)
         self.config.updated.connect(self.show_config)
         self.show_config()
 
@@ -48,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_config_dialog(self):
         config_copy = ConfigManager(self.config.defaults)
         config_copy.set_many(self.config.as_dict())
-        config_copy.set_metadata(self.config.metadata)
+        config_copy.set_many_metadata(self.config.metadata_as_dict())
 
         config_dialog = ConfigDialog(config_copy, self, cols=2, flags=Qt.WindowCloseButtonHint)
         config_dialog.setWindowTitle("Settings")
@@ -116,21 +116,14 @@ def build_config_layout(config, cols=2):
     for form in forms:
         h_layout.addLayout(form)
 
-    num_prefer_hidden = 0
-    for k, v in config.metadata.items():
-        if "prefer_hidden" in v:
-            if v["prefer_hidden"]:
-                num_prefer_hidden += 1
-
+    num_prefer_hidden = sum([1 for _, value in config.metadata_as_dict().items() if value["prefer_hidden"]])
     num_items = len(config.as_dict()) - num_prefer_hidden
 
     i = -1
     for key in config.as_dict():
-        if key in config.metadata and "prefer_hidden" in config.metadata[key]:
+        if config.get_metadata(key)["prefer_hidden"]:
             # If the key doesn't want to be shown, skip this row
-            if config.metadata[key]["prefer_hidden"]:
-                continue
-
+            continue
         i += 1
 
         # Find which column to put the setting in. Columns are filled equally, with remainder to the left. Each column
@@ -145,13 +138,13 @@ def build_config_layout(config, cols=2):
         if key in config.handlers:
             # If we've already defined a handler, use that
             input_widget = config.handlers[key]
-        elif key in config.metadata and "preferred_handler" in config.metadata[key]:
+        elif config.get_metadata(key)["preferred_handler"] is not None:
             # If there is a preferred handler in the metadata, create one of those. If there is a preferred mapper
             # use that
-            input_widget = config.metadata[key]["preferred_handler"]()
-            if "preferred_map_dict" in config.metadata[key]:
-                input_widget.addItems(config.metadata[key]["preferred_map_dict"].keys())
-                config.add_handler(key, input_widget, mapper=config.metadata[key]["preferred_map_dict"])
+            input_widget = config.get_metadata(key)["preferred_handler"]()
+            if config.get_metadata(key)["preferred_map_dict"] is not None:
+                input_widget.addItems(config.get_metadata(key)["preferred_map_dict"].keys())
+                config.add_handler(key, input_widget, mapper=config.get_metadata(key)["preferred_map_dict"])
             else:
                 config.add_handler(key, input_widget)
         else:

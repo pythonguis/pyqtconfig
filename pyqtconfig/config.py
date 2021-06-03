@@ -633,6 +633,12 @@ HOOKS = {
     QTabWidget: (_get_QTabWidget, _set_QTabWidget, _event_QTabWidget)
 }
 
+default_metadata = {
+    "prefer_hidden": False,
+    "preferred_handler": None,
+    "preferred_map_dict": None
+}
+
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file
@@ -655,7 +661,7 @@ class ConfigManagerBase(QObject):
         # Same mapping as above, used when config not set
         self.defaults = defaults
 
-        self.metadata = {}
+        self._metadata = {}
 
     def _get(self, key):
         with QMutexLocker(self.mutex):
@@ -687,6 +693,25 @@ class ConfigManagerBase(QObject):
         if v is not None:
             return v
         return self._get_default(key)
+
+    def get_metadata(self, key):
+        with QMutexLocker(self.mutex):
+            try:
+                return self._metadata[key]
+            except KeyError:
+                return default_metadata
+
+    def metadata_as_dict(self):
+        """
+        Get metadata for all items. (If none is set get_metadata returns default)
+
+        TODO: Should both this and as_dict iterate on defaults.keys() | config.keys()?
+        """
+        metadata_dict = {}
+        for k, v in self.defaults.items():
+            metadata_dict[k] = self.get_metadata(k)
+
+        return metadata_dict
 
     def set(self, key, value, trigger_handler=True, trigger_update=True):
         """
@@ -750,6 +775,22 @@ class ConfigManagerBase(QObject):
         self.defaults[key] = value
         self.eventhooks[key] = eventhook
         self.updated.emit(eventhook)
+
+    def set_metadata(self, key, update_dict):
+        """
+        Set the metadata for a single key.
+
+        TODO: Not sure if this needs to trigger handler etc?
+
+        :param key: Config item key
+        :param update_dict: Dict of changes to the default metadata
+        """
+        with QMutexLocker(self.mutex):
+            m = default_metadata.copy()
+            for k, v in update_dict.items():
+                if k in default_metadata:
+                    m[k] = v
+            self._metadata[key] = m
 
     def set_defaults(self, keyvalues, eventhook=RECALCULATE_ALL):
         """
@@ -817,6 +858,17 @@ class ConfigManagerBase(QObject):
             self.updated.emit(RECALCULATE_ALL)
 
         return has_updated
+
+    def set_many_metadata(self, metadata):
+        """
+        Set the config manager's metadata attribute. This should be a dict with keys matching each config item for which
+        there is metadata. The metadata can include preferred handler, preferred mapper etc.
+
+        :param metadata:
+        """
+        for key, value in metadata.items():
+            self.set_metadata(key, value)
+
     # HANDLERS
 
     # Handlers are UI elements (combo, select, checkboxes) that automatically
@@ -950,15 +1002,6 @@ class ConfigManagerBase(QObject):
             result_dict[k] = self.get(k)
 
         return result_dict
-
-    def set_metadata(self, metadata):
-        """
-        Set the config manager's metadata attribute. This should be a dict with keys matching each config item for which
-        there is metadata. The metadata can include preferred handler, preferred mapper etc.
-
-        :param metadata:
-        """
-        self.metadata = metadata
 
     @staticmethod
     def get_default_handler(in_type):
