@@ -46,8 +46,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_button.clicked.connect(self.create_config_dialog)
 
     def create_config_dialog(self):
-        config_copy = ConfigManager(self.config.as_dict())
+        config_copy = ConfigManager(self.config.defaults)
+        config_copy.set_many(self.config.as_dict())
         config_copy.set_metadata(self.config.metadata)
+
         config_dialog = ConfigDialog(config_copy, self, cols=2, flags=Qt.WindowCloseButtonHint)
         config_dialog.setWindowTitle("Settings")
         config_dialog.setMaximumWidth(100)
@@ -76,15 +78,27 @@ class ConfigDialog(QtWidgets.QDialog):
         config_layout = build_config_layout(config, **config_layout_kwargs)
 
         # Create a button box for the dialog
-        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Reset | QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
+
+        # QDialogButtonBox places Reset after Ok and Cancel
+        button_box.buttons()[2].setText("Reset to Defaults")
+        button_box.buttons()[2].clicked.connect(self.show_confirm_reset_dialog)
 
         # Place everything in a layout in the dialog
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(config_layout)
         layout.addWidget(button_box)
         self.setLayout(layout)
+
+    def show_confirm_reset_dialog(self):
+        message_box = QtWidgets.QMessageBox(text="Are you sure you want to reset to defaults?")
+        message_box.setWindowTitle("Warning")
+        message_box.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        message_box.buttonClicked.connect(
+            lambda button: (self.config.set_many(self.config.defaults) if button.text() == "OK" else None))
+        message_box.exec()
 
 
 def build_config_layout(config, cols=2):
