@@ -13,12 +13,13 @@ from .qt import (QComboBox, QCheckBox, QAction,
                  QDoubleSpinBox, QPlainTextEdit, QLineEdit,
                  QListWidget, QSlider, QButtonGroup,
                  QTabWidget, QVariant, Qt, QMutex, QMutexLocker, QSettings,
-                 QObject, Signal)
+                 QObject, Signal, QApplication)
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
+import warnings
 
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
@@ -1006,6 +1007,10 @@ class ConfigManager(ConfigManagerBase):
 
 class QSettingsManager(ConfigManagerBase):
 
+    def __init__(self, *args, warn_no_app_name=True, **kwargs):
+        self.warn_no_app_name = warn_no_app_name
+        super().__init__(*args, **kwargs)
+
     def reset(self):
         """
             Reset the config manager to it's initialised state.
@@ -1013,6 +1018,12 @@ class QSettingsManager(ConfigManagerBase):
             This initialises QSettings, unsets all defaults and removes all
             handlers, maps, and hooks.
         """
+        if self.warn_no_app_name:
+            app = QApplication.instance()
+            if app.applicationName() == "" or app.organizationName() == "":
+                warnings.warn("QApplication.applicationName and QApplication.orginizationName "
+                              "must be set for QSettings to persist.")
+
         self.settings = QSettings()
         self.handlers = {}
         self.handler_callbacks = {}
