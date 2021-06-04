@@ -1,9 +1,6 @@
 import PyQt5
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
-# import PySide2
-# from PySide2.QtCore import Qt
-# from PySide2 import QtWidgets
 from pyqtconfig import ConfigManager, ConfigDialog
 
 default_settings = {
