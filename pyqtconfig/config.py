@@ -1058,16 +1058,14 @@ class ConfigManager(ConfigManagerBase):
 
     default_path = "config.json"
 
-    def __init__(self, *args, load_file=False, filename=None, **kwargs):
+    def __init__(self, *args, filename=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         if filename is not None:
             self.path = filename
+            self.load()
         else:
             self.path = self.default_path
-
-        if load_file:
-            self.load()
 
     def reset(self):
         """

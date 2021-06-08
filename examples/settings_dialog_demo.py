@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.layout.addWidget(self.current_config)
         self.layout.addWidget(self.settings_button)
 
-        self.config = ConfigManager(default_settings, load_file=True, filename="config/settings_config.json")
+        self.config = ConfigManager(default_settings, filename="config/settings_config.json")
         self.config.set_many_metadata(default_settings_metadata)
         self.config.updated.connect(self.show_config)
         self.show_config()
