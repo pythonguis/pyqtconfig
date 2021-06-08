@@ -13,6 +13,7 @@ Features
 - seamlessly handle conversion of types from QSettings strings
 - integrated mapping handles conversions between display and internal settings, e.g. nice text in combo boxes to integer values
 - save and load configuration via `dict` (to JSON) or `XML`
+- automatically generate a layout containing config items
 - BSD licensed
 
 Introduction
