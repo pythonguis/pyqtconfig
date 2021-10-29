@@ -13,12 +13,19 @@ from .qt import (QComboBox, QCheckBox, QAction,
                  QDoubleSpinBox, QPlainTextEdit, QLineEdit,
                  QListWidget, QSlider, QButtonGroup,
                  QTabWidget, QVariant, Qt, QMutex, QMutexLocker, QSettings,
-                 QObject, Signal)
+                 QObject, Signal, QApplication)
+from .qt import QtWidgets
 try:
     import xml.etree.cElementTree as et
 except ImportError:
     import xml.etree.ElementTree as et
 
+import warnings
+import json
+import os
+import pathlib
+from math import ceil
+import sys
 
 RECALCULATE_ALL = 1
 RECALCULATE_VIEW = 2
@@ -629,6 +636,12 @@ HOOKS = {
     QTabWidget: (_get_QTabWidget, _set_QTabWidget, _event_QTabWidget)
 }
 
+default_metadata = {
+    "prefer_hidden": False,
+    "preferred_handler": None,
+    "preferred_map_dict": None
+}
+
 
 # ConfigManager handles configuration for a given appview
 # Supports default values, change signals, export/import from file
@@ -650,6 +663,8 @@ class ConfigManagerBase(QObject):
 
         # Same mapping as above, used when config not set
         self.defaults = defaults
+
+        self._metadata = {}
 
     def _get(self, key):
         with QMutexLocker(self.mutex):
@@ -681,6 +696,25 @@ class ConfigManagerBase(QObject):
         if v is not None:
             return v
         return self._get_default(key)
+
+    def get_metadata(self, key):
+        with QMutexLocker(self.mutex):
+            try:
+                return self._metadata[key]
+            except KeyError:
+                return default_metadata
+
+    def metadata_as_dict(self):
+        """
+        Get metadata for all items. (If none is set get_metadata returns default)
+
+        TODO: Should both this and as_dict iterate on defaults.keys() | config.keys()?
+        """
+        metadata_dict = {}
+        for k, v in self.defaults.items():
+            metadata_dict[k] = self.get_metadata(k)
+
+        return metadata_dict
 
     def set(self, key, value, trigger_handler=True, trigger_update=True):
         """
@@ -744,6 +778,22 @@ class ConfigManagerBase(QObject):
         self.defaults[key] = value
         self.eventhooks[key] = eventhook
         self.updated.emit(eventhook)
+
+    def set_metadata(self, key, update_dict):
+        """
+        Set the metadata for a single key.
+
+        TODO: Not sure if this needs to trigger handler etc?
+
+        :param key: Config item key
+        :param update_dict: Dict of changes to the default metadata
+        """
+        with QMutexLocker(self.mutex):
+            m = default_metadata.copy()
+            for k, v in update_dict.items():
+                if k in default_metadata:
+                    m[k] = v
+            self._metadata[key] = m
 
     def set_defaults(self, keyvalues, eventhook=RECALCULATE_ALL):
         """
@@ -811,13 +861,24 @@ class ConfigManagerBase(QObject):
             self.updated.emit(RECALCULATE_ALL)
 
         return has_updated
+
+    def set_many_metadata(self, metadata):
+        """
+        Set the config manager's metadata attribute. This should be a dict with keys matching each config item for which
+        there is metadata. The metadata can include preferred handler, preferred mapper etc.
+
+        :param metadata:
+        """
+        for key, value in metadata.items():
+            self.set_metadata(key, value)
+
     # HANDLERS
 
     # Handlers are UI elements (combo, select, checkboxes) that automatically
     # update and updated from the config manager. Allows instantaneous
     # updating on config changes and ensuring that elements remain in sync
 
-    def add_handler(self, key, handler, mapper=(lambda x: x, lambda x: x),
+    def add_handler(self, key, handler=None, mapper=(lambda x: x, lambda x: x),
                     default=None):
         """
         Add a handler (UI element) for a given config key.
@@ -832,6 +893,27 @@ class ConfigManagerBase(QObject):
         the values shown in the UI and those saved/loaded from the config.
 
         """
+        if key in self.handlers:
+            # Already there; so skip must remove first to replace
+            return
+
+        # If no handler is supplied, we try to create one either by using either the preferred_handler item in metadata
+        # or using a default one based on the type
+        if handler is None:
+            if self.get_metadata(key)["preferred_handler"] is not None:
+                # If there is a preferred handler in the metadata, create one of those. If there is a preferred mapper
+                # use that
+                handler = self.get_metadata(key)["preferred_handler"]()
+                if self.get_metadata(key)["preferred_map_dict"] is not None:
+                    mapper = self.get_metadata(key)["preferred_map_dict"]
+                    # If we've just created the handler, we need to add the map dict items
+                    handler.addItems(self.get_metadata(key)["preferred_map_dict"].keys())
+            # There is not preferred handler, get a default one
+            else:
+                handler = self.get_default_handler(type(self.get(key)))
+            if handler is None:
+                return
+
         # Add map handler for converting displayed values to
         # internal config data
         if isinstance(mapper, (dict, OrderedDict)):
@@ -842,10 +924,6 @@ class ConfigManagerBase(QObject):
             mapper = build_tuple_mapper(mapper)
 
         handler._get_map, handler._set_map = mapper
-
-        if key in self.handlers:
-            # Already there; so skip must remove first to replace
-            return
 
         self.handlers[key] = handler
 
@@ -940,8 +1018,54 @@ class ConfigManagerBase(QObject):
 
         return result_dict
 
+    def all_as_dict(self):
+        """
+        Return a dict containing defaults, config, and metadata
+
+        :return:
+        """
+
+        return {
+            "defaults": self.defaults.copy(),
+            "config": self.as_dict(),
+            "metadata": self.metadata_as_dict()
+        }
+
+    def get_visible_keys(self):
+        return [k for k in self.defaults if not self.get_metadata(k)["prefer_hidden"]]
+
+    @staticmethod
+    def get_default_handler(in_type):
+        """
+        Get a default handler widget based on the input type
+
+        :param in_type:
+        :return:
+        """
+        if in_type == str:
+            return QLineEdit()
+        elif in_type == float:
+            return QDoubleSpinBox()
+        elif in_type == bool:
+            return QCheckBox()
+        elif in_type == int:
+            return QSpinBox()
+        else:
+            return None
+
 
 class ConfigManager(ConfigManagerBase):
+
+    default_path = "config.json"
+
+    def __init__(self, *args, filename=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if filename is not None:
+            self.path = filename
+            self.load()
+        else:
+            self.path = self.default_path
 
     def reset(self):
         """
@@ -968,8 +1092,23 @@ class ConfigManager(ConfigManagerBase):
         with QMutexLocker(self.mutex):
             self.config[key] = value
 
+    def load(self):
+        if os.path.exists(self.path):
+            with open(self.path, "r") as f:
+                self.set_many(json.load(f))
+
+    def save(self):
+        pathlib.Path(self.path).parent.mkdir(parents=True, exist_ok=True)
+
+        with open(self.path, "w") as f:
+            json.dump(self.as_dict(), f, indent=4)
+
 
 class QSettingsManager(ConfigManagerBase):
+
+    def __init__(self, *args, warn_no_app_name=True, **kwargs):
+        self.warn_no_app_name = warn_no_app_name
+        super().__init__(*args, **kwargs)
 
     def reset(self):
         """
@@ -978,6 +1117,12 @@ class QSettingsManager(ConfigManagerBase):
             This initialises QSettings, unsets all defaults and removes all
             handlers, maps, and hooks.
         """
+        if self.warn_no_app_name:
+            app = QApplication.instance()
+            if app.applicationName() == "" or app.organizationName() == "":
+                warnings.warn("QApplication.applicationName and QApplication.orginizationName "
+                              "must be set for QSettings to persist.")
+
         self.settings = QSettings()
         self.handlers = {}
         self.handler_callbacks = {}
@@ -1033,3 +1178,95 @@ class QSettingsManager(ConfigManagerBase):
     def _set(self, key, value):
         with QMutexLocker(self.mutex):
             self.settings.setValue(key, value)
+
+
+class ConfigDialog(QtWidgets.QDialog):
+    """
+    A Dialog class inheriting from QtWidgets.QDialog. This class creates layout from the input config using
+    build_config_layout, as well as QDialogButtonBox with Ok and Cancel buttons.
+    """
+    def __init__(self, config, *args, cols=None, **kwargs):
+        if "PyQt5" in sys.modules:
+            f = kwargs.pop("f", None)
+            if f is not None:
+                kwargs["flags"] = f
+        elif "PySide2" in sys.modules:
+            flags = kwargs.pop("flags", None)
+            if flags is not None:
+                kwargs["f"] = flags
+
+        super().__init__(*args, **kwargs)
+        config_dict = config.all_as_dict()
+        self.config = ConfigManager(config_dict["defaults"])
+        self.config.set_many(config_dict["config"])
+        self.config.set_many_metadata(config_dict["metadata"])
+
+        # Build layout from settings
+        config_layout_kwargs = {} if cols is None else {"cols": cols}
+        config_layout = build_config_layout(self.config, **config_layout_kwargs)
+
+        # Create a button box for the dialog
+        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Reset | QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+
+        # QDialogButtonBox places Reset after Ok and Cancel
+        button_box.buttons()[2].setText("Reset to Defaults")
+        button_box.buttons()[2].clicked.connect(self.show_confirm_reset_dialog)
+
+        # Place everything in a layout in the dialog
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(config_layout)
+        layout.addWidget(button_box)
+        self.setLayout(layout)
+
+    def show_confirm_reset_dialog(self):
+        message_box = QtWidgets.QMessageBox(self, text="Are you sure you want to reset to defaults?")
+        message_box.setWindowTitle("Warning")
+        message_box.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        message_box.buttonClicked.connect(
+            lambda button: (self.config.set_many(self.config.defaults) if button.text() == "OK" else None))
+        message_box.exec()
+
+
+def build_config_layout(config, cols=2):
+    """
+    Generate a layout based on the input ConfigManager. The layout consists of a user specified number of columns of
+    QFormLayout. In each row of the QFormLayout, the label is the config dict key, and the field is the config handler
+    for that key.
+
+    :param config: ConfigManager
+    :param cols: Number of columns to use
+    :return: QHBoxLayout
+    """
+    h_layout = QtWidgets.QHBoxLayout()
+    forms = [QtWidgets.QFormLayout() for _ in range(cols)]
+    for form in forms:
+        h_layout.addLayout(form)
+
+    num_items = len(config.get_visible_keys())
+    for i, key in enumerate(config.get_visible_keys()):
+        # Find which column to put the setting in. Columns are filled equally, with remainder to the left. Each column
+        # is filled before proceeding to the next.
+        f_index = 0
+        for j in range(cols):
+            if (i+1) <= ceil((j+1)*num_items/cols):
+                f_index = j
+                break
+
+        # Get the handler widget for the key
+        if key in config.handlers:
+            # If we've already defined a handler, use that
+            input_widget = config.handlers[key]
+        else:
+            # Otherwise, try to add a handler. If it fails, skip this row
+            config.add_handler(key)
+            if key not in config.handlers:
+                continue
+            else:
+                input_widget = config.handlers[key]
+
+        label = QtWidgets.QLabel(key)
+        forms[f_index].addRow(label, input_widget)
+
+    return h_layout

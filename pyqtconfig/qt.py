@@ -14,17 +14,20 @@ if "PyQt5" in sys.modules:
                                  QListWidget, QSlider, QButtonGroup,
                                  QTabWidget, QApplication, QGridLayout,
                                  QTextEdit, QWidget, QMainWindow)
+    from PyQt5 import QtWidgets
 
     Signal = pyqtSignal
 
 elif "PySide2" in sys.modules:
-    from PySide.QtGui import (QComboBox, QCheckBox, QAction, QMainWindow,
+    from PySide2.QtWidgets import (QComboBox, QCheckBox, QAction, QMainWindow,
                               QActionGroup, QPushButton, QSpinBox,
                               QDoubleSpinBox, QPlainTextEdit, QLineEdit,
                               QListWidget, QSlider, QButtonGroup, QWidget,
                               QTabWidget, QApplication, QGridLayout, QTextEdit)
-    from PySide.QtCore import (Signal, Qt, QMutex, QMutexLocker, QSettings,
+    from PySide2.QtCore import (Signal, Qt, QMutex, QMutexLocker, QSettings,
                                QObject)
+
+    from PySide2 import QtWidgets
     
     QVariant = None
 

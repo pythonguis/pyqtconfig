@@ -4,7 +4,7 @@ PyQtConfig
 PyQtConfig is a simple API for handling, persisting and synchronising configuration 
 within PyQt applications.
 
-![Demo of config setting with widgets #1](demo-1.png)
+![Demo of config setting with widgets #1](demo_images/demo-1.png)
 
 Features
 --------
@@ -13,6 +13,7 @@ Features
 - seamlessly handle conversion of types from QSettings strings
 - integrated mapping handles conversions between display and internal settings, e.g. nice text in combo boxes to integer values
 - save and load configuration via `dict` (to JSON) or `XML`
+- automatically generate a layout containing config items
 - BSD licensed
 
 Introduction
@@ -37,13 +38,13 @@ with widgets requires a running QApplication). Go to the pyqtconfig install fold
 python -m pyqtconfig.demo
 ```
 
-![Demo of config setting with widgets #2](demo-2.png)
+![Demo of config setting with widgets #2](demo_images/demo-2.png)
 
-![Demo of config setting with widgets #3](demo-3.png)
+![Demo of config setting with widgets #3](demo_images/demo-3.png)
 
-![Demo of config setting with widgets #4](demo-4.png)
+![Demo of config setting with widgets #4](demo_images/demo-4.png)
 
-![Demo of config setting with widgets #4](demo-5.png)
+![Demo of config setting with widgets #4](demo_images/demo-5.png)
 
 
 Simple usage (dictionary)
@@ -129,7 +130,7 @@ checkbox = QtGui.QCheckBox('active')
 config.add_handler('active', checkbox)
 ```
 
-![Demo of config setting with widgets #2](demo-6.png)
+![Demo of config setting with widgets #2](demo_images/demo-6.png)
 
 
 The values of the widgets are automatically set to the pre-set defaults. Note that if we
@@ -156,7 +157,7 @@ config.set('text', 'new value')
 config.set('active', False)
 ```
 
-![Demo of config setting with widgets #2](demo-7.png)
+![Demo of config setting with widgets #2](demo_images/demo-7.png)
 
     
 Mapping
@@ -194,7 +195,7 @@ comboBox.addItems( map_dict.keys() )
 config.add_handler('combo', comboBox, mapper=map_dict)
 ```
 
-![Demo of config setting with widgets #2](demo-8.png)
+![Demo of config setting with widgets #2](demo_images/demo-8.png)
 
 Note how the config is set to `3` (the value of `CHOICE_C`) but displays "Choice C" as text.
 
@@ -242,11 +243,21 @@ Saving and loading data
 -----------------------
 
 `QSettingsManager` uses a `QSettings` object as a config store and so the saving of configuration is
-automatic through the Qt APIs.  However, if you're using `ConfigManager` you will need another
-approach to load and save your settings (note that these functions are also available in
-`QSettingsManager` if you want them).
+automatic through the Qt APIs. `ConfigManager` supports loading and saving of settings in a JSON file.
+To load settings from file, specify a filename on creation of the `ConfigManager`
 
-The simplest access is to output the stored data as a `dict` using `as_dict()`.
+```python
+config = ConfigManager(default_settings, filename="config/settings_config.json")
+```
+
+To save settings to file, use `save()`
+
+```python
+config.save()
+```
+
+If you want to use your own approach to save and load your settings, you can output the stored data
+as a `dict` using `as_dict()`
 
 ```python
 config.as_dict()
@@ -279,7 +290,69 @@ config2.setXMLConfig(root)
 config2.get('combo')
 >> 4
 ```
-    
+Generating a Config Dialog
+--------------------------
+pyqtconfig has the ability to automatically generate a dialog populated with the contents of
+a `ConfigManager`. The following code shows how this is done from the context of a 
+`QMainWindow` class.  (see 
+[the examples](https://github.com/learnpyqt/pyqtconfig/tree/master/examples) 
+for the full code)
+
+```python
+        config_dialog = ConfigDialog(self.config, self, cols=2)
+        config_dialog.setWindowTitle("Settings")
+        config_dialog.accepted.connect(lambda: self.update_config(config_dialog.config))
+        config_dialog.exec()
+```
+
+Below is an example of the generated Dialog:
+
+![Example settings dialog](demo_images/settings_dialog.png)
+
+
+Metadata
+--------
+To make it easier to work with multiple config items, especially when using the auto-generated config
+dialog, you can define some of the behavior of config items using *metadata*. Metadata are properties
+attached to each config item, and can be defined using a `dict`. For example, the defaults and metadata
+used to define the settings for the above dialog:
+
+```python
+default_settings = {
+    "Setting 1": "Hello",
+    "Setting 2": 25,
+    "Setting 3": 12.5,
+    "Setting 4": False,
+}
+
+default_settings_metadata = {
+    "Setting 2": {
+        "preferred_handler": QtWidgets.QComboBox,
+        "preferred_map_dict": {
+            "Choice A": 25,
+            "Choice B": 26,
+            "Choice C": 27
+        }
+    },
+    "Setting 3": {
+        "prefer_hidden": True
+    }
+}
+```
+
+These are set using the `set_many_metadata` method
+
+```python
+config.set_many_metadata(default_settings_metadata)
+```
+
+Metadata are defined for a config item through a metadata dict item with a matching key (e.g. 
+"Setting 2" in config is controlled by "Setting 2" in metadata). "preferred_handler" sets the type
+that will be used by `add_handler` if none is passed as an argument. (e.g. during creation of a
+`ConfigDialog`). "preferred_map_dict" is used in the same way. If "prefer_hidden" is set to True, it
+will not be added to a `ConfigDialog`. You can also get the list of config items that do not have 
+"prefer_hidden" set to true using `get_visible_keys()`
+
 Acknowledgements
 ----------------
 

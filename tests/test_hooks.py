@@ -44,3 +44,6 @@ def test_no_hook():
     with pytest.raises(TypeError) as e:
         assert config._get_hook(o)
     assert "No handler-functions available for this" in str(e)
+
+
+app.deleteLater()
