@@ -430,12 +430,14 @@ def _set_QListWidget(self, v):
 
         Supply values to be selected as a list.
     """
-    if v:
+    try:
         for s in v:
             self.findItems(
                 unicode(self._set_map(s)),
-                Qt.MatchExactly)[0].setSelected(True)
-
+                Qt.MatchExactly
+            )[0].setSelected(True)
+    except (KeyError, TypeError):
+        return None
 
 def _event_QListWidget(self):
     """
