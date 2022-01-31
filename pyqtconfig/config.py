@@ -1206,7 +1206,10 @@ class ConfigDialog(QtWidgets.QDialog):
         config_layout = build_config_layout(self.config, **config_layout_kwargs)
 
         # Create a button box for the dialog
-        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Reset | QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        if "PyQt6" in sys.modules:
+            button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Reset | QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        else:
+            button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Reset | QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
 
@@ -1223,9 +1226,13 @@ class ConfigDialog(QtWidgets.QDialog):
     def show_confirm_reset_dialog(self):
         message_box = QtWidgets.QMessageBox(self, text="Are you sure you want to reset to defaults?")
         message_box.setWindowTitle("Warning")
-        message_box.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        if "PyQt6" in sys.modules:
+            message_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok | QtWidgets.QMessageBox.StandardButton.Cancel)
+        else:
+            message_box.setStandardButtons(
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         message_box.buttonClicked.connect(
-            lambda button: (self.config.set_many(self.config.defaults) if button.text() == "OK" else None))
+            lambda button: (self.config.set_many(self.config.defaults) if "OK" in button.text() else None))
         message_box.exec()
 
 
