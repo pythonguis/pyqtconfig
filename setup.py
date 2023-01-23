@@ -5,7 +5,7 @@ import setuptools
 setuptools.setup(
 
     name='pyqtconfig',
-    version="0.9.1",
+    version="0.9.2",
     author='Martin Fitzpatrick',
     author_email='martin.fitzpatrick@gmail.com',
     url='https://github.com/learnpyqt/pyqtconfig',
@@ -15,7 +15,7 @@ setuptools.setup(
     for both dictionary config, QSettings and config XML import/export. Combo and list boxes also support \
     mapping from display->internal values.',
     packages=setuptools.find_packages(),
-    keywords='pyqt desktop gui pyqt5 qt',
+    keywords='pyqt desktop gui pyqt5 qt pyqt6 pyside6 pyside2',
     license='GPL',
     classifiers=[
         'Programming Language :: Python :: 3',

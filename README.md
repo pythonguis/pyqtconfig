@@ -1,7 +1,7 @@
 PyQtConfig
 ==========
 
-PyQtConfig is a simple API for handling, persisting and synchronising configuration 
+PyQtConfig is a simple API for handling, persisting and synchronising configuration
 within PyQt applications.
 
 ![Demo of config setting with widgets #1](demo_images/demo-1.png)
@@ -21,21 +21,22 @@ Introduction
 
 The core of the API is a `ConfigManager` instance that holds configuration settings (either
 as a Python dict, or a QSettings instance) and provides standard methods to `get` and `set`
-values. 
+values.
 
 Configuration parameters can have Qt widgets attached as *handlers*. Once attached the widget
 and the configuration value will be kept in sync. Setting the value on the `ConfigManager` will
 update any attached widgets and changes to the value on the widget will be reflected immmediately
 in the `ConfigManager`. Qt signals are emitted on each update.
 
-Default values can be set and will be returned transparently if a parameter remains unset. 
+Default values can be set and will be returned transparently if a parameter remains unset.
 The current state of config can be saved and reloaded via XML or exported to a flat dict.
 
 A small application has been included in PyQtConfig to demonstrate these features (interaction
 with widgets requires a running QApplication). Go to the pyqtconfig install folder and run it with:
 
 ```
-python -m pyqtconfig.demo
+cd pyqtconfig/examples
+python demo.py
 ```
 
 ![Demo of config setting with widgets #2](demo_images/demo-2.png)
@@ -46,13 +47,20 @@ python -m pyqtconfig.demo
 
 ![Demo of config setting with widgets #4](demo_images/demo-5.png)
 
+PyQtConfig can also auto-generate settings dialogs from Python dictionaries. To see
+an example run the second demo.
+
+```
+cd pyqtconfig/examples
+python settings_dialog_demo.py
+```
 
 Simple usage (dictionary)
 -------------------------
 
 To store your settings you need to create a `ConfigManager` instance. This consists of a
 settings dictionary, a default settings dictionary and a number of helper functions to
-handle setting, getting and other functions. 
+handle setting, getting and other functions.
 
 ```python
 from pyqtconfig import ConfigManager
@@ -64,7 +72,7 @@ config.set_defaults({
     'text': 'hello',
     'array': ['1','2'],
     'active': True,
-    
+
 })
 ```
 
@@ -82,7 +90,7 @@ config.get('number')
 Simple usage (QSettings)
 -------------------------
 
-The `QSettingsManager` provides exactly the same API as the standard `QConfigManager`, the 
+The `QSettingsManager` provides exactly the same API as the standard `QConfigManager`, the
 only difference is in the storage of values.
 
 ```python
@@ -100,13 +108,13 @@ settings.get('number')
 ```
 
 Note: On some platforms, versions of Qt, or Qt APIs QSettings will return strings for all values
-which can lead to complicated code and breakage. However, PyQtConfig is smart enough to 
-use the `type` of the config parameter in defaults to auto-convert returned values. 
+which can lead to complicated code and breakage. However, PyQtConfig is smart enough to
+use the `type` of the config parameter in defaults to auto-convert returned values.
 
-However, you do not have to set defaults manually. As of v0.7 default values are auto-set when 
+However, you do not have to set defaults manually. As of v0.7 default values are auto-set when
 attaching widgets (handlers) to the config manager *if they're not already set*.
 
-From this point on we'll be referring to the `ConfigManager` class only, but all features 
+From this point on we'll be referring to the `ConfigManager` class only, but all features
 work identically in `QSettingsManager`.
 
 Adding widget handlers
@@ -114,7 +122,7 @@ Adding widget handlers
 
 So far we could have achieved the same thing with a standard Python dict/QSettings object.
 The real usefulness of PyQtConfig is in the ability to interact with QWidgets maintaining
-synchronisation between widgets and internal config, and providing a simple standard 
+synchronisation between widgets and internal config, and providing a simple standard
 interface to retrieve values.
 
 Note: It's difficult to demonstrate the functionality since you need a running QApplication
@@ -134,7 +142,7 @@ config.add_handler('active', checkbox)
 
 
 The values of the widgets are automatically set to the pre-set defaults. Note that if we
-hadn't pre-set a default value the *reverse* would happen, and the default would be set 
+hadn't pre-set a default value the *reverse* would happen, and the default would be set
 to the value in the widget. This allows you to define the defaults in either way.
 
 Next we'll change the value of both widgets.
@@ -159,7 +167,7 @@ config.set('active', False)
 
 ![Demo of config setting with widgets #2](demo_images/demo-7.png)
 
-    
+
 Mapping
 -------
 
@@ -167,7 +175,7 @@ Sometimes you want to display a different value in a widget than you store in th
 The most obvious example would be in a combo box where you want to list nice descriptive
 names, but want to store short names or numbers in the configuration.
 
-To enable this PyQtConfig allows a `mapper` to be defined when attaching a widget to a config. 
+To enable this PyQtConfig allows a `mapper` to be defined when attaching a widget to a config.
 Mappers are provided as tuple of 2 functions `set` and `get` that each perform the conversion
 required when setting and getting the value from the widget. To simplify map creation however
 you can also specify the mapping as a dict and PyQtConfig will create the necessary lambdas
@@ -215,7 +223,7 @@ The following Qt-Widgets are supported:
  - QListWidget
  - QSlider
  - QButtonGroup
- 
+
 There are also some additional hooks defined for non standard widgets. With
 ```python
 import pyqtconfig
@@ -227,10 +235,10 @@ from pyqtconfig import ConfigManager
 
 def _get_MyWidget(self):
     return self.myvalue
-   
+
 def _set_MyWidget(self, val):
     self.myvalue = val
-	
+
 def _event_MyWidget(self):
     return self.MyValueChanged
 
@@ -273,7 +281,7 @@ config2.set_defaults( config.as_dict() )
 config2.get('combo')
 >> 3
 ```
-    
+
 You can also export and import data as XML. The two functions for handling XML import take an
 `ElementTree` root element and search for config settings under `Config/ConfigSetting`. This allows
 you to use PyQtConfig to write config into an XML file without worrying about the format.
@@ -293,9 +301,9 @@ config2.get('combo')
 Generating a Config Dialog
 --------------------------
 pyqtconfig has the ability to automatically generate a dialog populated with the contents of
-a `ConfigManager`. The following code shows how this is done from the context of a 
-`QMainWindow` class.  (see 
-[the examples](https://github.com/learnpyqt/pyqtconfig/tree/master/examples) 
+a `ConfigManager`. The following code shows how this is done from the context of a
+`QMainWindow` class.  (see
+[the examples](https://github.com/learnpyqt/pyqtconfig/tree/master/examples)
 for the full code)
 
 ```python
@@ -346,11 +354,11 @@ These are set using the `set_many_metadata` method
 config.set_many_metadata(default_settings_metadata)
 ```
 
-Metadata are defined for a config item through a metadata dict item with a matching key (e.g. 
+Metadata are defined for a config item through a metadata dict item with a matching key (e.g.
 "Setting 2" in config is controlled by "Setting 2" in metadata). "preferred_handler" sets the type
 that will be used by `add_handler` if none is passed as an argument. (e.g. during creation of a
 `ConfigDialog`). "preferred_map_dict" is used in the same way. If "prefer_hidden" is set to True, it
-will not be added to a `ConfigDialog`. You can also get the list of config items that do not have 
+will not be added to a `ConfigDialog`. You can also get the list of config items that do not have
 "prefer_hidden" set to true using `get_visible_keys()`
 
 Acknowledgements
