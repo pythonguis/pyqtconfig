@@ -52,3 +52,5 @@ venv.bak/
 
 # pyqtconfig json files
 *config.json
+
+log/
